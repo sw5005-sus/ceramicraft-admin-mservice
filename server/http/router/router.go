@@ -28,6 +28,8 @@ func NewRouter() *gin.Engine {
 				"message": "pong",
 			})
 		})
+		basicGroup.GET("/audit-logs", api.GetAuditLogs)
+		basicGroup.GET("/audit-logs/verify", api.VerifyAuditLogs)
 	}
 
 	v1UnAuthed := r.Group(serviceURIPrefix + "/:client")
