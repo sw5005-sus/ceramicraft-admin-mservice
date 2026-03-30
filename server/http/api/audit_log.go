@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/proxy"
 )
 
 // Get Audit Logs.
@@ -22,15 +23,20 @@ import (
 // @Success 200 {object} data.BaseResponse{data=[]data.AuditLog}
 // @Failure 400 {object} data.BaseResponse{data=string}
 // @Failure 500 {object} data.BaseResponse{data=string}
-// @Router /admin-ms/v1/audit-logs [get]
+// @Router /admin-ms/v1/merchanat/audit-logs [get]
 func GetAuditLogs(c *gin.Context) {
 	req := &data.AuditLogListRequest{}
 	if err := c.ShouldBindQuery(req); err != nil {
 		c.JSON(http.StatusBadRequest, data.BaseResponse{ErrMsg: err.Error()})
 		return
 	}
-	// TODO: implement service call
-	c.JSON(http.StatusOK, data.BaseResponse{Data: []data.AuditLog{}})
+	logs, err := proxy.GetAuditClient().QueryAuditLogs(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, data.BaseResponse{ErrMsg: err.Error()})
+		return
+
+	}
+	c.JSON(http.StatusOK, data.BaseResponse{Data: logs})
 }
 
 // Verify Audit Logs.
@@ -41,16 +47,20 @@ func GetAuditLogs(c *gin.Context) {
 // @Produce json
 // @Param start_time query string false "Start time"
 // @Param end_time query string false "End time"
-// @Success 200 {object} data.BaseResponse
+// @Success 200 {object} data.BaseResponse{data=data.AuditLogVerifyResponse}
 // @Failure 400 {object} data.BaseResponse{data=string}
 // @Failure 500 {object} data.BaseResponse{data=string}
-// @Router /admin-ms/v1/audit-logs/verify [get]
+// @Router /admin-ms/v1/merchant/audit-logs/verify [get]
 func VerifyAuditLogs(c *gin.Context) {
 	req := &data.AuditLogVerifyRequest{}
 	if err := c.ShouldBindQuery(req); err != nil {
 		c.JSON(http.StatusBadRequest, data.BaseResponse{ErrMsg: err.Error()})
 		return
 	}
-	// TODO: implement service call
-	c.JSON(http.StatusOK, data.BaseResponse{})
+	resp, err := proxy.GetAuditClient().VerifyAuditLogs(c.Request.Context(), req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, data.BaseResponse{ErrMsg: err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, data.BaseResponse{Data: resp})
 }

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/config"
 	"go.uber.org/zap"
@@ -17,7 +18,14 @@ var (
 func InitLogger() {
 	writeSyncer := getLogWriter()
 	encoder := getEncoder()
-	core := zapcore.NewCore(encoder, writeSyncer, getLogLevel())
+	fileCore := zapcore.NewCore(encoder, writeSyncer, getLogLevel())
+	var core zapcore.Core
+	if config.Config.LogConfig.FilePath != "" {
+		consoleCore := zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), getLogLevel())
+		core = zapcore.NewTee(fileCore, consoleCore)
+	} else {
+		core = fileCore
+	}
 	Logger = zap.New(core, zap.AddCaller()).Sugar()
 }
 
@@ -35,7 +43,13 @@ func getLogLevel() zapcore.Level {
 
 func getEncoder() zapcore.Encoder {
 	encoderConfig := zap.NewProductionEncoderConfig()
-	encoderConfig.EncodeTime = zapcore.TimeEncoderOfLayout("2006-01-02 15:04:05")
+	encoderConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		location, err := time.LoadLocation("Asia/Singapore")
+		if err != nil {
+			location = time.Local
+		}
+		enc.AppendString(t.In(location).Format("2006-01-02 15:04:05"))
+	}
 	encoderConfig.EncodeLevel = zapcore.CapitalLevelEncoder
 	return zapcore.NewConsoleEncoder(encoderConfig)
 }

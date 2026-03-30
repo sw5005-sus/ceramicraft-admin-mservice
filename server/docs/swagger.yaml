@@ -1,4 +1,31 @@
 definitions:
+  data.AuditLog:
+    properties:
+      actor_id:
+        description: ID of the user who performed the action
+        type: integer
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      occurred_at:
+        type: string
+      role:
+        type: string
+      service:
+        type: string
+    type: object
+  data.AuditLogVerifyResponse:
+    properties:
+      failed_log_ids:
+        type: string
+      is_valid:
+        type: boolean
+      message:
+        type: string
+    type: object
   data.BaseResponse:
     properties:
       code:
@@ -7,38 +34,38 @@ definitions:
       err_msg:
         type: string
     type: object
-  data.ItemVO:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-    required:
-    - name
-    type: object
 info:
   contact: {}
 paths:
-  /admin-ms/v1/{client}/items:
-    post:
-      consumes:
-      - application/json
-      description: Create an item record.
+  /admin-ms/v1/merchanat/audit-logs:
+    get:
+      description: Retrieve audit logs with optional filtering by user, service, and
+        time range.
       parameters:
-      - description: Item information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/data.ItemVO'
-      - description: Client identifier
-        enum:
-        - customer
-        - merchant
-        in: path
-        name: client
-        required: true
+      - description: User ID
+        in: query
+        name: user_id
         type: string
+      - description: Service name
+        in: query
+        name: service
+        type: string
+      - description: Start time
+        in: query
+        name: start_time
+        type: string
+      - description: End time
+        in: query
+        name: end_time
+        type: string
+      - description: Offset for pagination
+        in: query
+        name: offset
+        type: integer
+      - description: Limit for pagination
+        in: query
+        name: limit
+        type: integer
       produces:
       - application/json
       responses:
@@ -49,7 +76,9 @@ paths:
             - $ref: '#/definitions/data.BaseResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/data.ItemVO'
+                  items:
+                    $ref: '#/definitions/data.AuditLog'
+                  type: array
               type: object
         "400":
           description: Bad Request
@@ -69,30 +98,52 @@ paths:
                 data:
                   type: string
               type: object
-      summary: Item Create
+      summary: Get Audit Logs
       tags:
-      - Item
-  /admin-ms/v1/{client}/items/{item_id}:
+      - AuditLog
+  /admin-ms/v1/merchant/audit-logs/verify:
     get:
-      description: Get item information by item ID.
+      description: Verify audit logs within a specified time range.
       parameters:
-      - description: Client identifier
-        enum:
-        - customer
-        - merchant
-        in: path
-        name: client
-        required: true
+      - description: Start time
+        in: query
+        name: start_time
         type: string
-      - description: Item.ID
-        in: path
-        name: item_id
-        required: true
-        type: integer
+      - description: End time
+        in: query
+        name: end_time
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
           description: OK
-      summary: Item Query with ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/data.AuditLogVerifyResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Verify Audit Logs
       tags:
-      - Item
+      - AuditLog
 swagger: "2.0"

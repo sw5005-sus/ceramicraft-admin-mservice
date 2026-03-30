@@ -11,7 +11,7 @@ type AuditLog struct {
 }
 
 type AuditLogListRequest struct {
-	UserID    string `form:"user_id"` // filter by actor's user ID
+	UserID    int    `form:"user_id"` // filter by actor's user ID
 	Service   string `form:"service"`
 	StartTime string `form:"start_time"`
 	EndTime   string `form:"end_time"`
@@ -22,4 +22,10 @@ type AuditLogListRequest struct {
 type AuditLogVerifyRequest struct {
 	StartTime string `form:"start_time"`
 	EndTime   string `form:"end_time"`
+}
+
+type AuditLogVerifyResponse struct {
+	IsValid     bool   `json:"is_valid"`
+	FailedLogId string `json:"failed_log_ids"`
+	Message     string `json:"message"`
 }

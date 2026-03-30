@@ -4,39 +4,52 @@
         "contact": {}
     },
     "paths": {
-        "/admin-ms/v1/{client}/items": {
-            "post": {
-                "description": "Create an item record.",
-                "consumes": [
-                    "application/json"
-                ],
+        "/admin-ms/v1/merchanat/audit-logs": {
+            "get": {
+                "description": "Retrieve audit logs with optional filtering by user, service, and time range.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Item"
+                    "AuditLog"
                 ],
-                "summary": "Item Create",
+                "summary": "Get Audit Logs",
                 "parameters": [
                     {
-                        "description": "Item information",
-                        "name": "user",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/data.ItemVO"
-                        }
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "user_id",
+                        "in": "query"
                     },
                     {
-                        "enum": [
-                            "customer",
-                            "merchant"
-                        ],
                         "type": "string",
-                        "description": "Client identifier",
-                        "name": "client",
-                        "in": "path",
-                        "required": true
+                        "description": "Service name",
+                        "name": "service",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Start time",
+                        "name": "start_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "End time",
+                        "name": "end_time",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset for pagination",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Limit for pagination",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -51,7 +64,10 @@
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/data.ItemVO"
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/data.AuditLog"
+                                            }
                                         }
                                     }
                                 }
@@ -97,42 +113,131 @@
                 }
             }
         },
-        "/admin-ms/v1/{client}/items/{item_id}": {
+        "/admin-ms/v1/merchant/audit-logs/verify": {
             "get": {
-                "description": "Get item information by item ID.",
-                "tags": [
-                    "Item"
+                "description": "Verify audit logs within a specified time range.",
+                "produces": [
+                    "application/json"
                 ],
-                "summary": "Item Query with ID",
+                "tags": [
+                    "AuditLog"
+                ],
+                "summary": "Verify Audit Logs",
                 "parameters": [
                     {
-                        "enum": [
-                            "customer",
-                            "merchant"
-                        ],
                         "type": "string",
-                        "description": "Client identifier",
-                        "name": "client",
-                        "in": "path",
-                        "required": true
+                        "description": "Start time",
+                        "name": "start_time",
+                        "in": "query"
                     },
                     {
-                        "type": "integer",
-                        "description": "Item.ID",
-                        "name": "item_id",
-                        "in": "path",
-                        "required": true
+                        "type": "string",
+                        "description": "End time",
+                        "name": "end_time",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/data.AuditLogVerifyResponse"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/data.BaseResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
                     }
                 }
             }
         }
     },
     "definitions": {
+        "data.AuditLog": {
+            "type": "object",
+            "properties": {
+                "actor_id": {
+                    "description": "ID of the user who performed the action",
+                    "type": "integer"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "occurred_at": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "service": {
+                    "type": "string"
+                }
+            }
+        },
+        "data.AuditLogVerifyResponse": {
+            "type": "object",
+            "properties": {
+                "failed_log_ids": {
+                    "type": "string"
+                },
+                "is_valid": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "data.BaseResponse": {
             "type": "object",
             "properties": {
@@ -141,20 +246,6 @@
                 },
                 "data": {},
                 "err_msg": {
-                    "type": "string"
-                }
-            }
-        },
-        "data.ItemVO": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "name": {
                     "type": "string"
                 }
             }
