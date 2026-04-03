@@ -238,7 +238,7 @@ const docTemplate = `{
         "data.AuditLogVerifyResponse": {
             "type": "object",
             "properties": {
-                "failed_log_ids": {
+                "failed_log_id": {
                     "type": "string"
                 },
                 "is_valid": {

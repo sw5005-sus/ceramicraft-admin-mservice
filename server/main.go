@@ -19,7 +19,7 @@ var (
 func main() {
 	config.Init()
 	log.InitLogger()
-	proxy.InitAuditclient()
+	proxy.InitAuditClient()
 	go grpc.Init(sigCh)
 	go http.Init(sigCh)
 	// listen terminage signal

@@ -26,6 +26,6 @@ type AuditLogVerifyRequest struct {
 
 type AuditLogVerifyResponse struct {
 	IsValid     bool   `json:"is_valid"`
-	FailedLogId string `json:"failed_log_ids"`
+	FailedLogId string `json:"failed_log_id"`
 	Message     string `json:"message"`
 }

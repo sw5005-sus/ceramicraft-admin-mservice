@@ -84,7 +84,7 @@ var (
 	auditLogProxyOnce     sync.Once
 )
 
-func InitAuditclient() {
+func InitAuditClient() {
 	auditLogProxyOnce.Do(func() {
 		client, err := audit_client.GetAuditClient(
 			config.Config.AuditGrpcConfig.Host,
@@ -99,8 +99,6 @@ func InitAuditclient() {
 }
 
 func GetAuditClient() IAuditLogProxy {
-	if auditLogProxyInstance == nil {
-		InitAuditclient()
-	}
+	InitAuditClient()
 	return auditLogProxyInstance
 }

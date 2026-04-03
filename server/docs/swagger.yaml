@@ -19,7 +19,7 @@ definitions:
     type: object
   data.AuditLogVerifyResponse:
     properties:
-      failed_log_ids:
+      failed_log_id:
         type: string
       is_valid:
         type: boolean
