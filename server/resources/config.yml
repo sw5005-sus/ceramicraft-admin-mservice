@@ -17,3 +17,7 @@ mysql:
   port: "3306"
   userName: "root"
   dbName: "admin_db"
+
+audit_grpc:
+  host: localhost
+  port: 50051

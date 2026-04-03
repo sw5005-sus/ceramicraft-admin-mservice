@@ -9,8 +9,7 @@ import (
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/grpc"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/http"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/log"
-	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository"
-	"github.com/sw5005-sus/ceramicraft-user-mservice/common/utils"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/proxy"
 )
 
 var (
@@ -20,8 +19,7 @@ var (
 func main() {
 	config.Init()
 	log.InitLogger()
-	repository.Init()
-	utils.InitJwtSecret()
+	proxy.InitAuditClient()
 	go grpc.Init(sigCh)
 	go http.Init(sigCh)
 	// listen terminage signal
