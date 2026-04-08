@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk User Review - Detail</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.13.6/dist/index.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f7fa;
+      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+    }
+    #app { padding: 24px; max-width: 900px; }
+    .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+    .page-header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #303133; }
+    .not-found {
+      text-align: center; padding: 60px 20px; color: #909399;
+    }
+    .not-found p { margin: 12px 0 24px; font-size: 14px; }
+    .action-bar { margin-top: 24px; display: flex; gap: 8px; }
+
+    .nice-select {
+      width: 220px;
+      height: 34px;
+      padding: 0 30px 0 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #fff;
+      font-size: 14px;
+      color: #606266;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23909099' d='M512 682L192 362h640z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+      box-sizing: border-box;
+    }
+    .nice-select:hover {
+      border-color: #c0c4cc;
+    }
+    .nice-select:focus {
+      border-color: #409eff;
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="page-header">
+      <el-button :icon="ArrowLeft" @click="goBack">Back</el-button>
+      <h2>Risk User Review - Detail</h2>
+    </div>
+
+    <div v-if="!record" class="not-found">
+      <el-icon size="48"><Warning /></el-icon>
+      <p>Record data not available. Please navigate from the list page.</p>
+      <el-button type="primary" @click="goBack">Go to List</el-button>
+    </div>
+
+    <el-card v-else>
+      <el-descriptions title="Review Information" :column="2" border>
+        <el-descriptions-item label="ID">{{ record.id }}</el-descriptions-item>
+        <el-descriptions-item label="User ID">{{ record.user_id }}</el-descriptions-item>
+        <el-descriptions-item label="Create Time">{{ formatTime(record.create_time) }}</el-descriptions-item>
+        <el-descriptions-item label="Decision">
+          <el-tag :type="decisionTagType(record.decision)" size="small">{{ decisionLabel(record.decision) }}</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="Decision Source" :span="2">{{ record.decision_source || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="Risk Score">{{ record.risk_score }}</el-descriptions-item>
+        <el-descriptions-item label="Risk Level">{{ record.risk_level || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="Rule Score">{{ record.rule_score }}</el-descriptions-item>
+        <el-descriptions-item label="Fraud Probability">{{ record.fraud_probability }}</el-descriptions-item>
+        <el-descriptions-item label="Confidence" :span="2">{{ record.confidence || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="Analyst Summary" :span="2">
+          <span style="white-space:pre-wrap">{{ record.analyst_summary || '-' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="Rules" :span="2">
+          <span style="white-space:pre-wrap;word-break:break-all">{{ record.rules || '-' }}</span>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <div class="action-bar">
+        <el-button
+          type="warning"
+          v-if="record.decision === DECISION_MANUAL_REVIEW"
+          @click="openUpdateDialog"
+        >Update Decision</el-button>
+        <el-button @click="goBack">Back to List</el-button>
+      </div>
+    </el-card>
+
+    <el-dialog v-model="updateDialogVisible" title="Update Decision" width="420px" :close-on-click-modal="false">
+      <el-descriptions :column="1" border size="small" style="margin-bottom:16px">
+        <el-descriptions-item label="Review ID">{{ record && record.id }}</el-descriptions-item>
+        <el-descriptions-item label="User ID">{{ record && record.user_id }}</el-descriptions-item>
+        <el-descriptions-item label="Current Decision">
+          <el-tag v-if="record" :type="decisionTagType(record.decision)" size="small">
+            {{ decisionLabel(record.decision) }}
+          </el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <el-form label-width="120px">
+        <el-form-item label="New Decision" required>
+          <select v-model.number="newDecision" class="nice-select">
+            <option disabled value="">Select resolved decision</option>
+            <option :value="RESOLVED_BLOCK">Resolved - Block</option>
+            <option :value="RESOLVED_WHITELIST">Resolved - Whitelist</option>
+            <option :value="RESOLVED_WATCHLIST">Resolved - Watchlist</option>
+          </select>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="updateDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" :loading="updateLoading" @click="submitUpdateDecision">Confirm</el-button>
+      </template>
+    </el-dialog>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script>
+    const { createApp, ref, onMounted } = Vue;
+
+    const DECISION_MANUAL_REVIEW = 1;
+    const DECISION_BLOCK         = 2;
+    const DECISION_WATCHLIST     = 3;
+    const DECISION_ALLOW         = 4;
+    const DECISION_UNRECOGNIZED  = 0;
+    const RESOLVED_BLOCK         = 10;
+    const RESOLVED_WHITELIST     = 11;
+    const RESOLVED_WATCHLIST     = 12;
+
+    const decisionMap = {
+      [DECISION_UNRECOGNIZED]:  { label: 'Unrecognized',         type: 'info' },
+      [DECISION_MANUAL_REVIEW]: { label: 'Manual Review',        type: 'warning' },
+      [DECISION_BLOCK]:         { label: 'Block',                type: 'danger' },
+      [DECISION_WATCHLIST]:     { label: 'Watchlist',            type: '' },
+      [DECISION_ALLOW]:         { label: 'Allow',                type: 'success' },
+      [RESOLVED_BLOCK]:         { label: 'Resolved - Block',     type: 'danger' },
+      [RESOLVED_WHITELIST]:     { label: 'Resolved - Whitelist', type: 'success' },
+      [RESOLVED_WATCHLIST]:     { label: 'Resolved - Watchlist', type: 'info' },
+    };
+
+    function decisionLabel(val) {
+      return (decisionMap[val] && decisionMap[val].label) ? decisionMap[val].label : String(val);
+    }
+
+    function decisionTagType(val) {
+      return (decisionMap[val] && decisionMap[val].type !== undefined) ? decisionMap[val].type : 'info';
+    }
+
+    function formatTime(ts) {
+      if (ts === null || ts === undefined) return '-';
+      return new Date(ts * 1000).toLocaleString();
+    }
+
+    function getReviewIdFromPath() {
+      const parts = window.location.pathname.split('/');
+      return parts[parts.length - 1];
+    }
+
+    createApp({
+      setup() {
+        const record              = ref(null);
+        const updateDialogVisible = ref(false);
+        const newDecision         = ref('');
+        const updateLoading       = ref(false);
+
+        onMounted(() => {
+          const id = getReviewIdFromPath();
+          const stored = sessionStorage.getItem('rur_detail_' + id);
+          if (stored) {
+            try { record.value = JSON.parse(stored); } catch (e) {}
+          }
+        });
+
+        function goBack() {
+          if (document.referrer && document.referrer.includes('/risk-user-reviews/page')) {
+            history.back();
+          } else {
+            window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page';
+          }
+        }
+
+        function openUpdateDialog() {
+          newDecision.value = '';
+          updateDialogVisible.value = true;
+        }
+
+        async function submitUpdateDecision() {
+          if (newDecision.value === '' || newDecision.value === null || newDecision.value === undefined) {
+            ElementPlus.ElMessage.warning('Please select a resolved decision');
+            return;
+          }
+          updateLoading.value = true;
+          try {
+            const body = {
+              id: record.value.id,
+              user_id: record.value.user_id,
+              decision: newDecision.value,
+            };
+            const resp = await fetch(
+              '/admin-ms/v1/merchant/risk-user-reviews/' + record.value.id + '/decision',
+              {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(body),
+              }
+            );
+            const json = await resp.json();
+            if (json.err_msg) {
+              ElementPlus.ElMessage.error(json.err_msg);
+            } else {
+              ElementPlus.ElMessage.success('Decision updated successfully');
+              updateDialogVisible.value = false;
+              record.value = Object.assign({}, record.value, { decision: newDecision.value });
+              sessionStorage.setItem('rur_detail_' + record.value.id, JSON.stringify(record.value));
+            }
+          } catch (e) {
+            ElementPlus.ElMessage.error('Request failed: ' + e.message);
+          } finally {
+            updateLoading.value = false;
+          }
+        }
+
+        return {
+          DECISION_MANUAL_REVIEW, RESOLVED_BLOCK, RESOLVED_WHITELIST, RESOLVED_WATCHLIST,
+          decisionLabel, decisionTagType, formatTime,
+          record, updateDialogVisible, newDecision, updateLoading,
+          goBack, openUpdateDialog, submitUpdateDecision,
+          ArrowLeft: ElementPlus.icons ? ElementPlus.icons.ArrowLeft : null,
+          Warning:   ElementPlus.icons ? ElementPlus.icons.Warning   : null,
+        };
+      },
+    }).use(ElementPlus).mount('#app');
+  </script>
+</body>
+</html>

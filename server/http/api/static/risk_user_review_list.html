@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Risk User Review</title>
+  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.13.6/dist/index.css" />
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f5f7fa;
+      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+    }
+    #app { padding: 24px; }
+    .page-header { font-size: 20px; font-weight: 600; color: #303133; margin-bottom: 20px; }
+    .filter-card { margin-bottom: 16px; }
+    .filter-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; }
+    .filter-item { display: flex; flex-direction: column; gap: 4px; }
+    .filter-item label { font-size: 13px; color: #606266; }
+    .filter-actions { display: flex; gap: 8px; padding-top: 20px; }
+    .table-actions { display: flex; gap: 6px; }
+    .pagination-wrap { margin-top: 16px; display: flex; justify-content: flex-end; }
+    .auth-notice {
+      background: #fef0f0; border: 1px solid #f56c6c; border-radius: 6px;
+      padding: 12px 16px; margin-bottom: 16px; color: #f56c6c; font-size: 13px;
+    }
+  
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+  
+    .rur-table {
+      width: 100%;
+      min-width: 1020px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #fff;
+      border: 1px solid #ebeef5;
+    }
+  
+    .rur-table th,
+    .rur-table td {
+      border: 1px solid #ebeef5;
+      padding: 12px;
+      text-align: left;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+  
+    .rur-table th {
+      background: #f5f7fa;
+      color: #909399;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  
+    .rur-table td {
+      color: #606266;
+      background: #fff;
+    }
+  
+    .rur-table tbody tr:nth-child(even) td {
+      background: #fafafa;
+    }
+  
+    .nowrap-cell {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nice-select {
+      width: 220px;
+      height: 34px;
+      padding: 0 30px 0 10px;
+
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #fff;
+
+      font-size: 14px;
+      color: #606266;
+
+      outline: none;
+      cursor: pointer;
+
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      transition: border-color 0.2s;
+    }
+
+    .nice-select:hover {
+      border-color: #c0c4cc;
+    }
+
+    .nice-select:focus {
+      border-color: #409eff;
+      box-shadow: 0 0 0 2px rgba(64,158,255,0.2);
+    }
+
+    .nice-select {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23909099' d='M512 682L192 362h640z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+    }
+
+    .nice-select:disabled {
+      background-color: #f5f7fa;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div class="page-header">Risk User Review</div>
+
+    <el-card class="filter-card">
+      <div class="filter-row">
+        <div class="filter-item">
+          <label>User ID</label>
+          <el-input v-model.number="filter.user_id" placeholder="User ID" clearable style="width:120px" />
+        </div>
+        <div class="filter-item">
+          <label>Decision</label>
+          <el-select v-model="filter.decision" placeholder="All" clearable style="width:180px">
+            <el-option v-for="opt in decisionOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </div>
+        <div class="filter-item">
+          <label>Start Time</label>
+          <el-date-picker
+            v-model="filter.start_time_ms"
+            type="datetime"
+            placeholder="Start time"
+            value-format="x"
+            style="width:190px"
+          />
+        </div>
+        <div class="filter-item">
+          <label>End Time</label>
+          <el-date-picker
+            v-model="filter.end_time_ms"
+            type="datetime"
+            placeholder="End time"
+            value-format="x"
+            style="width:190px"
+          />
+        </div>
+        <div class="filter-actions">
+          <el-button type="primary" @click="fetchList(1)" :loading="loading">Search</el-button>
+          <el-button @click="resetFilter">Reset</el-button>
+        </div>
+      </div>
+    </el-card>
+
+    <el-card v-loading="loading">
+      <div class="table-wrapper">
+        <table class="rur-table">
+          <colgroup>
+            <col style="width: 80px" />
+            <col style="width: 90px" />
+            <col style="width: 170px" />
+            <col style="width: 100px" />
+            <col style="width: 110px" />
+            <col style="width: 155px" />
+            <col style="width: 160px" />
+            <col style="width: 155px" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User ID</th>
+              <th>Create Time</th>
+              <th>Risk Score</th>
+              <th>Risk Level</th>
+              <th>Decision</th>
+              <th>Decision Source</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!tableData.length">
+              <td colspan="8" style="text-align: center; color: #909399;">No Data</td>
+            </tr>
+            <tr v-for="row in tableData" :key="row.id">
+              <td class="nowrap-cell">{{ row.id ?? '-' }}</td>
+              <td class="nowrap-cell">{{ row.user_id ?? '-' }}</td>
+              <td class="nowrap-cell">{{ formatTime(row.create_time) }}</td>
+              <td class="nowrap-cell">{{ row.risk_score ?? '-' }}</td>
+              <td class="nowrap-cell">{{ row.risk_level ?? '-' }}</td>
+              <td class="nowrap-cell">
+                <el-tag :type="decisionTagType(row.decision)" size="small">
+                  {{ decisionLabel(row.decision) }}
+                </el-tag>
+              </td>
+              <td class="nowrap-cell" :title="row.decision_source || '-'">
+                {{ row.decision_source || '-' }}
+              </td>
+              <td class="nowrap-cell">
+                <div class="table-actions">
+                  <el-button size="small" @click="viewDetail(row)">Detail</el-button>
+                  <el-button
+                    size="small"
+                    type="warning"
+                    v-if="row.decision === DECISION_MANUAL_REVIEW"
+                    @click="openUpdateDialog(row)"
+                  >Update</el-button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination-wrap">
+        <el-pagination
+          v-model:current-page="page"
+          v-model:page-size="pageSize"
+          :page-sizes="[10, 20, 50, 100]"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="total"
+          @size-change="fetchList(1)"
+          @current-change="fetchList"
+          background
+        />
+      </div>
+    </el-card>
+
+    <!-- Update Decision Dialog -->
+    <el-dialog v-model="updateDialogVisible" title="Update Decision" width="420px" :close-on-click-modal="false">
+      <el-descriptions :column="1" border size="small" style="margin-bottom:16px">
+        <el-descriptions-item label="Review ID">{{ selectedRow && selectedRow.id }}</el-descriptions-item>
+        <el-descriptions-item label="User ID">{{ selectedRow && selectedRow.user_id }}</el-descriptions-item>
+        <el-descriptions-item label="Current Decision">
+          <el-tag v-if="selectedRow" :type="decisionTagType(selectedRow.decision)" size="small">
+            {{ decisionLabel(selectedRow.decision) }}
+          </el-tag>
+        </el-descriptions-item>
+      </el-descriptions>
+      <el-form label-width="120px">
+        <el-form-item label="New Decision" required>
+          <select v-model.number="newDecision" class="nice-select">
+            <option disabled value="">Select resolved decision</option>
+            <option :value="RESOLVED_BLOCK">Resolved - Block</option>
+            <option :value="RESOLVED_WHITELIST">Resolved - Whitelist</option>
+            <option :value="RESOLVED_WATCHLIST">Resolved - Watchlist</option>
+          </select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="updateDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" :loading="updateLoading" @click="submitUpdateDecision">Confirm</el-button>
+      </template>
+    </el-dialog>
+  </div>
+
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
+  <script>
+    const { createApp, ref, reactive, computed } = Vue;
+
+    const DECISION_MANUAL_REVIEW = 1;
+    const DECISION_BLOCK         = 2;
+    const DECISION_WATCHLIST     = 3;
+    const DECISION_ALLOW         = 4;
+    const DECISION_UNRECOGNIZED  = 0;
+    const RESOLVED_BLOCK         = 10;
+    const RESOLVED_WHITELIST     = 11;
+    const RESOLVED_WATCHLIST     = 12;
+
+    const decisionOptions = [
+      { label: 'Unrecognized',         value: DECISION_UNRECOGNIZED },
+      { label: 'Manual Review',        value: DECISION_MANUAL_REVIEW },
+      { label: 'Block',                value: DECISION_BLOCK },
+      { label: 'Watchlist',            value: DECISION_WATCHLIST },
+      { label: 'Allow',                value: DECISION_ALLOW },
+      { label: 'Resolved - Block',     value: RESOLVED_BLOCK },
+      { label: 'Resolved - Whitelist', value: RESOLVED_WHITELIST },
+      { label: 'Resolved - Watchlist', value: RESOLVED_WATCHLIST },
+    ];
+
+    function decisionLabel(val) {
+      const opt = decisionOptions.find(o => o.value === val);
+      return opt ? opt.label : String(val);
+    }
+
+    function decisionTagType(val) {
+      switch (val) {
+        case DECISION_MANUAL_REVIEW: return 'warning';
+        case DECISION_BLOCK:         return 'danger';
+        case DECISION_WATCHLIST:     return '';
+        case DECISION_ALLOW:         return 'success';
+        case RESOLVED_BLOCK:         return 'danger';
+        case RESOLVED_WHITELIST:     return 'success';
+        case RESOLVED_WATCHLIST:     return 'info';
+        default:                     return 'info';
+      }
+    }
+
+    function formatTime(ts) {
+      if (ts === null || ts === undefined) return '-';
+      return new Date(ts * 1000).toLocaleString();
+    }
+
+    createApp({
+      setup() {
+        const filter = reactive({
+          user_id: '',
+          decision: '',
+          start_time_ms: null,
+          end_time_ms: null,
+        });
+
+        const loading      = ref(false);
+        const tableData    = ref([]);
+        const total        = ref(0);
+        const page         = ref(1);
+        const pageSize     = ref(20);
+
+        const updateDialogVisible = ref(false);
+        const selectedRow         = ref(null);
+        const newDecision         = ref('');
+        const updateLoading       = ref(false);
+
+        async function fetchList(p) {
+          if (typeof p === 'number') page.value = p;
+          loading.value = true;
+          try {
+            const params = new URLSearchParams();
+            if (filter.user_id !== null && filter.user_id !== undefined && filter.user_id !== '') params.set('user_id', filter.user_id);
+            if (filter.decision !== null && filter.decision !== undefined && filter.decision !== '') params.set('decision', filter.decision);
+            if (filter.start_time_ms) params.set('start_time', Math.floor(Number(filter.start_time_ms) / 1000));
+            if (filter.end_time_ms)   params.set('end_time',   Math.floor(Number(filter.end_time_ms) / 1000));
+            params.set('page',      page.value);
+            params.set('page_size', pageSize.value);
+
+            const resp = await fetch('/admin-ms/v1/merchant/risk-user-reviews?' + params.toString(), {
+            });
+            const json = await resp.json();
+            if (json.err_msg) {
+              ElementPlus.ElMessage.error(json.err_msg);
+            } else {
+              tableData.value = (json.data && json.data.list) ? json.data.list : [];
+              total.value     = (json.data && json.data.total) ? json.data.total : 0;
+            }
+          } catch (e) {
+            ElementPlus.ElMessage.error('Request failed: ' + e.message);
+          } finally {
+            loading.value = false;
+          }
+        }
+
+        function resetFilter() {
+          filter.user_id       = '';
+          filter.decision      = '';
+          filter.start_time_ms = null;
+          filter.end_time_ms   = null;
+          fetchList(1);
+        }
+
+        function viewDetail(row) {
+          sessionStorage.setItem('rur_detail_' + row.id, JSON.stringify(row));
+          window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page/' + row.id;
+        }
+
+        function openUpdateDialog(row) {
+          selectedRow.value  = row;
+          newDecision.value  = '';
+          updateDialogVisible.value = true;
+        }
+
+        async function submitUpdateDecision() {
+          if (newDecision.value === '') {
+            ElementPlus.ElMessage.warning('Please select a resolved decision');
+            return;
+          }
+          updateLoading.value = true;
+          try {
+            const body = {
+              id:       selectedRow.value.id,
+              user_id:  selectedRow.value.user_id,
+              decision: newDecision.value,
+            };
+            const resp = await fetch(
+              '/admin-ms/v1/merchant/risk-user-reviews/' + selectedRow.value.id + '/decision',
+              {
+                method: 'PUT',
+                headers: {
+                  'Content-Type':  'application/json',
+                },
+                body: JSON.stringify(body),
+              }
+            );
+            const json = await resp.json();
+            if (json.err_msg) {
+              ElementPlus.ElMessage.error(json.err_msg);
+            } else {
+              ElementPlus.ElMessage.success('Decision updated successfully');
+              updateDialogVisible.value = false;
+              fetchList(page.value);
+            }
+          } catch (e) {
+            ElementPlus.ElMessage.error('Request failed: ' + e.message);
+          } finally {
+            updateLoading.value = false;
+          }
+        }
+
+        fetchList(1);
+
+        return {
+          DECISION_MANUAL_REVIEW, RESOLVED_BLOCK, RESOLVED_WHITELIST, RESOLVED_WATCHLIST,
+          decisionOptions, decisionLabel, decisionTagType, formatTime,
+          filter, loading, tableData, total, page, pageSize,
+          updateDialogVisible, selectedRow, newDecision, updateLoading,
+          fetchList, resetFilter, viewDetail, openUpdateDialog, submitUpdateDecision,
+        };
+      },
+    }).use(ElementPlus).mount('#app');
+  </script>
+</body>
+</html>
