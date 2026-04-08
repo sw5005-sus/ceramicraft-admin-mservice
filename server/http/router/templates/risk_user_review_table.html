@@ -1,0 +1,104 @@
+{{if .error}}
+<div class="section-title">Results</div>
+<div style="padding:20px">
+  <div class="alert alert-error">{{.error}}</div>
+</div>
+{{else}}
+<div class="section-title">
+  <span>Results</span>
+  {{if gt .total 0}}
+  <span class="total-badge">Total: {{.total}}</span>
+  {{end}}
+  <span class="htmx-indicator" id="table-loading"><span class="spinner"></span></span>
+</div>
+{{if eq (len .list) 0}}
+<div class="empty-state">
+  <div class="empty-icon">📋</div>
+  <div>No records found</div>
+</div>
+{{else}}
+<div class="table-wrapper">
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User ID</th>
+        <th>Created At</th>
+        <th>Risk Score</th>
+        <th>Risk Level</th>
+        <th>Fraud Prob.</th>
+        <th>Rule Score</th>
+        <th>Confidence</th>
+        <th>Decision</th>
+        <th>Decision Source</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .list}}
+      <tr>
+        <td><span class="text-mono">{{.ID}}</span></td>
+        <td style="font-weight:500">{{.UserID}}</td>
+        <td class="text-sm">{{formatTime .CreateTime}}</td>
+        <td>{{formatFloat .RiskScore}}</td>
+        <td>
+          {{if eq .RiskLevel "HIGH"}}
+          <span class="badge badge-danger">{{.RiskLevel}}</span>
+          {{else if eq .RiskLevel "MEDIUM"}}
+          <span class="badge badge-warning">{{.RiskLevel}}</span>
+          {{else if eq .RiskLevel "LOW"}}
+          <span class="badge badge-success">{{.RiskLevel}}</span>
+          {{else if .RiskLevel}}
+          <span class="badge badge-default">{{.RiskLevel}}</span>
+          {{else}}
+          <span class="text-sm">—</span>
+          {{end}}
+        </td>
+        <td>{{formatFloat .FraudProbability}}</td>
+        <td>{{formatFloat .RuleScore}}</td>
+        <td class="text-sm">{{.Confidence}}</td>
+        <td><span class="badge {{decisionClass .Decision}}">{{decisionLabel .Decision}}</span></td>
+        <td class="text-sm"
+            style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"
+            title="{{.DecisionSource}}">{{.DecisionSource}}</td>
+        <td>
+          {{if eq .Decision 1}}
+          <button class="btn btn-warning btn-sm"
+                  type="button"
+                  data-review-id="{{.ID}}"
+                  data-user-id="{{.UserID}}"
+                  onclick="openModal(
+                    this.dataset.reviewId,
+                    this.dataset.userId,
+                    'Manual Review',
+                    'badge-warning')">
+            Update
+          </button>
+          {{else}}
+          <span class="text-sm" style="color:#c0c4cc">—</span>
+          {{end}}
+        </td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+
+<div class="pagination">
+  <span class="pagination-info">
+    {{.total}} records &nbsp;·&nbsp; Page {{.page}} / {{.totalPages}}
+  </span>
+  {{if hasPrev .page}}
+  <button class="page-btn" type="button" onclick="goToPage({{sub .page 1}})">← Prev</button>
+  {{else}}
+  <button class="page-btn" type="button" disabled>← Prev</button>
+  {{end}}
+  <button class="page-btn active" type="button">{{.page}}</button>
+  {{if hasNext .page .totalPages}}
+  <button class="page-btn" type="button" onclick="goToPage({{add .page 1}})">Next →</button>
+  {{else}}
+  <button class="page-btn" type="button" disabled>Next →</button>
+  {{end}}
+</div>
+{{end}}
+{{end}}
