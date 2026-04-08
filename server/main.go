@@ -10,6 +10,8 @@ import (
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/http"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/log"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/proxy"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/redis"
 )
 
 var (
@@ -20,6 +22,10 @@ func main() {
 	config.Init()
 	log.InitLogger()
 	proxy.InitAuditClient()
+	repository.Init()
+	log.Logger.Info("Init db completed")
+	redis.InitRedis()
+	log.Logger.Info("Init redis completed")
 	go grpc.Init(sigCh)
 	go http.Init(sigCh)
 	// listen terminage signal

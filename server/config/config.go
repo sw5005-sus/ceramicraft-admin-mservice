@@ -11,11 +11,12 @@ var (
 )
 
 type Conf struct {
-	GrpcConfig      *GrpcConfig `mapstructure:"grpc"`
-	LogConfig       *LogConfig  `mapstructure:"log"`
-	HttpConfig      *HttpConfig `mapstructure:"http"`
-	MySQLConfig     *MySQL      `mapstructure:"mysql"`
-	AuditGrpcConfig *GrpcConfig `mapstructure:"audit_grpc"`
+	GrpcConfig      *GrpcConfig  `mapstructure:"grpc"`
+	LogConfig       *LogConfig   `mapstructure:"log"`
+	HttpConfig      *HttpConfig  `mapstructure:"http"`
+	MySQLConfig     *MySQL       `mapstructure:"mysql"`
+	AuditGrpcConfig *GrpcConfig  `mapstructure:"audit_grpc"`
+	RedisConfig     *RedisConfig `mapstructure:"redis"`
 }
 
 type HttpConfig struct {
@@ -38,9 +39,14 @@ type GrpcConfig struct {
 type MySQL struct {
 	Host     string `mapstructure:"host"`
 	Port     string `mapstructure:"port"`
-	UserName string `mapstructure:"userName"`
+	UserName string `mapstructure:"username"`
 	Password string `mapstructure:"password"`
-	DBName   string `mapstructure:"dbName"`
+	Database string `mapstructure:"database"`
+}
+
+type RedisConfig struct {
+	Host string `mapstructure:"host"`
+	Port int    `mapstructure:"port"`
 }
 
 func Init() {

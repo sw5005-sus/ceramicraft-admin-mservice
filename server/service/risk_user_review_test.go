@@ -1,0 +1,245 @@
+package service
+
+import (
+	"context"
+	"errors"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/config"
+	httpdata "github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/log"
+	daopkg "github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/dao"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/dao/mocks"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/model"
+	redis_mock "github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/redis/mocks"
+)
+
+func newTestService(d daopkg.RiskUserReviewDao) RiskUserReviewService {
+	return &riskUserReviewServiceImpl{dao: d}
+}
+
+func TestGetRiskUserReviews_Success(t *testing.T) {
+	mockDao := mocks.NewRiskUserReviewDao(t)
+
+	decision := int8(1)
+	req := &httpdata.RiskUserReviewListRequest{
+		UserID:    42,
+		Decision:  &decision,
+		StartTime: 1000,
+		EndTime:   2000,
+		Page:      1,
+		PageSize:  10,
+	}
+
+	expectedReviews := []*model.RiskUserReview{
+		{
+			ID:               1,
+			UserID:           42,
+			CreateTime:       1500,
+			Confidence:       "high",
+			AnalystSummary:   "looks fine",
+			Decision:         1,
+			DecisionSource:   "manual",
+			RiskScore:        0.3,
+			RiskLevel:        "low",
+			RuleScore:        0.2,
+			FraudProbability: 0.1,
+			Rules:            "[]",
+		},
+	}
+
+	mockDao.On("Select", mock.Anything, &daopkg.RiskUserReviewQuery{
+		UserID:    42,
+		Decision:  &decision,
+		StartTime: 1000,
+		EndTime:   2000,
+		Page:      1,
+		PageSize:  10,
+	}).Return(expectedReviews, int64(1), nil)
+
+	svc := newTestService(mockDao)
+	resp, err := svc.GetRiskUserReviews(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, int64(1), resp.Total)
+	assert.Len(t, resp.List, 1)
+	assert.Equal(t, int64(1), resp.List[0].ID)
+	assert.Equal(t, 42, resp.List[0].UserID)
+	assert.Equal(t, int8(1), resp.List[0].Decision)
+}
+
+func TestGetRiskUserReviews_DaoError(t *testing.T) {
+	mockDao := mocks.NewRiskUserReviewDao(t)
+
+	req := &httpdata.RiskUserReviewListRequest{Page: 1, PageSize: 10}
+
+	mockDao.On("Select", mock.Anything, mock.Anything).
+		Return(([]*model.RiskUserReview)(nil), int64(0), errors.New("db error"))
+
+	svc := newTestService(mockDao)
+	resp, err := svc.GetRiskUserReviews(context.Background(), req)
+
+	assert.Error(t, err)
+	assert.Nil(t, resp)
+	assert.EqualError(t, err, "db error")
+}
+
+func TestGetRiskUserReviews_Empty(t *testing.T) {
+	mockDao := mocks.NewRiskUserReviewDao(t)
+
+	req := &httpdata.RiskUserReviewListRequest{Page: 1, PageSize: 20}
+
+	mockDao.On("Select", mock.Anything, mock.Anything).
+		Return([]*model.RiskUserReview{}, int64(0), nil)
+
+	svc := newTestService(mockDao)
+	resp, err := svc.GetRiskUserReviews(context.Background(), req)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
+	assert.Equal(t, int64(0), resp.Total)
+	assert.Empty(t, resp.List)
+}
+func TestUpdateDecision_Success(t *testing.T) {
+	initEnv()
+	mockDao := mocks.NewRiskUserReviewDao(t)
+	mockStorage := redis_mock.NewRiskUserStorage(t)
+
+	svc := &riskUserReviewServiceImpl{
+		dao:             mockDao,
+		riskUserStorage: mockStorage,
+	}
+
+	req := &httpdata.UpdateDecisionRequest{
+		UserID:         42,
+		ID:             1,
+		Decision:       httpdata.RESOLVED_BLOCK,
+		DecisionSource: "manual",
+	}
+
+	mockDao.On("SelectByUserID", mock.Anything, req.UserID).Return(&model.RiskUserReview{
+		ID:       1,
+		UserID:   42,
+		Decision: httpdata.DECISION_MANUAL_REVIEW,
+	}, nil)
+
+	mockStorage.On("AddBlacklist", mock.Anything, req.UserID).Return(nil)
+	mockDao.On("UpdateDecision", mock.Anything, req.UserID, req.Decision, req.DecisionSource).Return(nil)
+
+	err := svc.UpdateDecision(context.Background(), req)
+
+	assert.NoError(t, err)
+	mockDao.AssertExpectations(t)
+	mockStorage.AssertExpectations(t)
+}
+
+func TestUpdateDecision_UserNotFound(t *testing.T) {
+	initEnv()
+	mockDao := mocks.NewRiskUserReviewDao(t)
+	mockStorage := redis_mock.NewRiskUserStorage(t)
+
+	svc := &riskUserReviewServiceImpl{
+		dao:             mockDao,
+		riskUserStorage: mockStorage,
+	}
+
+	req := &httpdata.UpdateDecisionRequest{
+		UserID:         42,
+		ID:             1,
+		Decision:       httpdata.RESOLVED_BLOCK,
+		DecisionSource: "manual",
+	}
+
+	mockDao.On("SelectByUserID", mock.Anything, req.UserID).Return(nil, nil)
+
+	err := svc.UpdateDecision(context.Background(), req)
+
+	assert.NoError(t, err)
+	mockDao.AssertExpectations(t)
+	mockStorage.AssertExpectations(t)
+}
+
+func TestUpdateDecision_InvalidDecision(t *testing.T) {
+	initEnv()
+	mockDao := mocks.NewRiskUserReviewDao(t)
+	mockStorage := redis_mock.NewRiskUserStorage(t)
+
+	svc := &riskUserReviewServiceImpl{
+		dao:             mockDao,
+		riskUserStorage: mockStorage,
+	}
+
+	req := &httpdata.UpdateDecisionRequest{
+		UserID:         42,
+		ID:             1,
+		Decision:       99, // Invalid decision
+		DecisionSource: "manual",
+	}
+
+	mockDao.On("SelectByUserID", mock.Anything, req.UserID).Return(&model.RiskUserReview{
+		ID:       1,
+		UserID:   42,
+		Decision: httpdata.DECISION_MANUAL_REVIEW,
+	}, nil)
+
+	err := svc.UpdateDecision(context.Background(), req)
+
+	assert.NoError(t, err)
+	mockDao.AssertExpectations(t)
+	mockStorage.AssertExpectations(t)
+}
+
+func TestUpdateDecision_NonManualReview(t *testing.T) {
+	initEnv()
+	mockDao := mocks.NewRiskUserReviewDao(t)
+	mockStorage := redis_mock.NewRiskUserStorage(t)
+
+	svc := &riskUserReviewServiceImpl{
+		dao:             mockDao,
+		riskUserStorage: mockStorage,
+	}
+
+	req := &httpdata.UpdateDecisionRequest{
+		UserID:         42,
+		ID:             1,
+		Decision:       httpdata.RESOLVED_BLOCK,
+		DecisionSource: "manual",
+	}
+
+	mockDao.On("SelectByUserID", mock.Anything, req.UserID).Return(&model.RiskUserReview{
+		ID:       1,
+		UserID:   42,
+		Decision: httpdata.DECISION_BLOCK, // Not manual
+	}, nil)
+
+	err := svc.UpdateDecision(context.Background(), req)
+
+	assert.NoError(t, err)
+	mockDao.AssertExpectations(t)
+	mockStorage.AssertExpectations(t)
+}
+func TestGetRiskUserReviewService_Singleton(t *testing.T) {
+	svc1 := GetRiskUserReviewService()
+	svc2 := GetRiskUserReviewService()
+
+	assert.Same(t, svc1, svc2, "GetRiskUserReviewService should return the same instance")
+}
+
+func TestGetRiskUserReviewService_Initialization(t *testing.T) {
+	svc := GetRiskUserReviewService()
+
+	assert.NotNil(t, svc, "RiskUserReviewService should be initialized")
+	assert.IsType(t, &riskUserReviewServiceImpl{}, svc, "Service should be of type riskUserReviewServiceImpl")
+}
+
+func initEnv() {
+	config.Config = &config.Conf{
+		LogConfig: &config.LogConfig{
+			Level: "debug",
+		},
+	}
+	log.InitLogger()
+}

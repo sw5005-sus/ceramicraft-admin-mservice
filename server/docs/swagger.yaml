@@ -34,6 +34,56 @@ definitions:
       err_msg:
         type: string
     type: object
+  data.RiskUserReview:
+    properties:
+      analyst_summary:
+        type: string
+      confidence:
+        type: string
+      create_time:
+        type: integer
+      decision:
+        type: integer
+      decision_source:
+        type: string
+      fraud_probability:
+        type: number
+      id:
+        type: integer
+      risk_level:
+        type: string
+      risk_score:
+        type: number
+      rule_score:
+        type: number
+      rules:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  data.RiskUserReviewListResponse:
+    properties:
+      list:
+        items:
+          $ref: '#/definitions/data.RiskUserReview'
+        type: array
+      total:
+        type: integer
+    type: object
+  data.UpdateDecisionRequest:
+    properties:
+      decision:
+        type: integer
+      decision_source:
+        type: string
+      id:
+        type: integer
+      user_id:
+        type: integer
+    required:
+    - id
+    - user_id
+    type: object
 info:
   contact: {}
 paths:
@@ -146,4 +196,114 @@ paths:
       summary: Verify Audit Logs
       tags:
       - AuditLog
+  /admin-ms/v1/merchant/risk-user-reviews:
+    get:
+      description: Retrieve a paginated list of risk user reviews with optional filtering
+        by status, user ID and creation time range.
+      parameters:
+      - description: Filter by user ID
+        in: query
+        name: user_id
+        type: integer
+      - description: Filter by decision value (tinyint)
+        in: query
+        name: decision
+        type: integer
+      - description: Filter create_time >= start_time (unix timestamp)
+        format: int64
+        in: query
+        name: start_time
+        type: integer
+      - description: Filter create_time <= end_time (unix timestamp)
+        format: int64
+        in: query
+        name: end_time
+        type: integer
+      - description: Page number (default 1)
+        in: query
+        name: page
+        type: integer
+      - description: Page size (default 20)
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/data.RiskUserReviewListResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: List Risk User Reviews
+      tags:
+      - RiskUserReview
+  /admin-ms/v1/merchant/risk-user-reviews/{review_id}/decision:
+    put:
+      consumes:
+      - application/json
+      description: Update the decision and optional decision_source for a risk user
+        review identified by user_id.
+      parameters:
+      - description: record ID of the risk user review to update
+        in: path
+        name: review_id
+        required: true
+        type: integer
+      - description: Update decision request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/data.UpdateDecisionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/data.BaseResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/data.BaseResponse'
+            - properties:
+                data:
+                  type: string
+              type: object
+      summary: Update Risk User Review Decision
+      tags:
+      - RiskUserReview
 swagger: "2.0"

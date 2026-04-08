@@ -15,9 +15,13 @@ log:
 mysql:
   host: "mysql-container"
   port: "3306"
-  userName: "root"
-  dbName: "admin_db"
+  username: "root"
+  database: "admin_db"
 
 audit_grpc:
   host: localhost
   port: 50051
+
+redis:
+  host: "redis-container"
+  port: 6379
