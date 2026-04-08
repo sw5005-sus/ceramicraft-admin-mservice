@@ -10,7 +10,6 @@ require (
 	github.com/sw5005-sus/ceramicraft-admin-mservice/common v0.0.0-20260328141703-66f85585efe5
 	github.com/sw5005-sus/ceramicraft-audit-client v0.0.2
 	github.com/sw5005-sus/ceramicraft-user-mservice/common v0.0.15
-	github.com/sw5005-sus/ceramicraft-user-mservice/server v0.0.0-20260408050124-11be78289b62
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.1
 	github.com/swaggo/swag v1.16.6
@@ -70,6 +69,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.0 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sagikazarmark/locafero v0.11.0 // indirect
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8 // indirect
 	github.com/spf13/afero v1.15.0 // indirect

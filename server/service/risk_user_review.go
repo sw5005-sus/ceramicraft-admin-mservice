@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
 	httpdata "github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/log"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/dao"
@@ -78,20 +77,20 @@ func (s *riskUserReviewServiceImpl) UpdateDecision(ctx context.Context, req *htt
 		log.Logger.Warnf("Risk user review with ID %d for user %d not found, skipping update", req.ID, req.UserID)
 		return nil // or return an error if you want to enforce existence
 	}
-	if riskUser.Decision != data.DECISION_MANUAL_REVIEW {
+	if riskUser.Decision != httpdata.DECISION_MANUAL_REVIEW {
 		log.Logger.Warnf("User %d decision is not MANUAL_REVIEW, skipping update", req.UserID)
 		return nil // no update needed
 	}
 	switch req.Decision {
-	case data.RESOLVED_BLOCK:
+	case httpdata.RESOLVED_BLOCK:
 		if err := s.riskUserStorage.AddBlacklist(ctx, req.UserID); err != nil {
 			return err
 		}
-	case data.RESOLVED_WHITELIST:
+	case httpdata.RESOLVED_WHITELIST:
 		if err := s.riskUserStorage.AddWhitelist(ctx, req.UserID); err != nil {
 			return err
 		}
-	case data.RESOLVED_WATCHLIST:
+	case httpdata.RESOLVED_WATCHLIST:
 		if err := s.riskUserStorage.AddWatchlist(ctx, req.UserID); err != nil {
 			return err
 		}

@@ -163,8 +163,6 @@ github.com/sw5005-sus/ceramicraft-audit-client v0.0.2 h1:oyTq9fXPnqSFec1Sxuw3bJ8
 github.com/sw5005-sus/ceramicraft-audit-client v0.0.2/go.mod h1:wlBaqsukUK09HO0r6R/aZbMpMLRpRxHkQMRDvZcsXJU=
 github.com/sw5005-sus/ceramicraft-user-mservice/common v0.0.15 h1:qQQ0IvBRMC9n3XvLtvfNEXPOOkKo9qvsUf6Oej43EgQ=
 github.com/sw5005-sus/ceramicraft-user-mservice/common v0.0.15/go.mod h1:MPvwfr2NGPV5yFhfih7NK26tsOceHl70lkdB+0yPILI=
-github.com/sw5005-sus/ceramicraft-user-mservice/server v0.0.0-20260408050124-11be78289b62 h1:ewelNe0sW0yQp0wxCGznyfj29EVJlgb2AepkscX8a3s=
-github.com/sw5005-sus/ceramicraft-user-mservice/server v0.0.0-20260408050124-11be78289b62/go.mod h1:bJCDy6bo6vv1g+TEEaG9608XukkAowirzv9JxFPwXUw=
 github.com/swaggo/files v1.0.1 h1:J1bVJ4XHZNq0I46UU90611i9/YzdrF7x92oX1ig5IdE=
 github.com/swaggo/files v1.0.1/go.mod h1:0qXmMNH6sXNf+73t65aKeB+ApmgxdnkQzVTAj2uaMUg=
 github.com/swaggo/gin-swagger v1.6.1 h1:Ri06G4gc9N4t4k8hekMigJ9zKTFSlqj/9paAQCQs7cY=

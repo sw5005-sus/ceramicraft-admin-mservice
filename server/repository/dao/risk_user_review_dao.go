@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/log"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/model"
@@ -98,7 +99,7 @@ func (d *riskUserReviewDaoImpl) Select(ctx context.Context, query *RiskUserRevie
 	offset := (page - 1) * pageSize
 
 	var reviews []*model.RiskUserReview
-	if err := db.Offset(offset).Limit(pageSize).Find(&reviews).Error; err != nil {
+	if err := db.Offset(offset).Limit(pageSize).Order("id desc").Find(&reviews).Error; err != nil {
 		log.Logger.Errorf("RiskUserReviewDao.Select query error: %v", err)
 		return nil, 0, err
 	}
@@ -107,7 +108,7 @@ func (d *riskUserReviewDaoImpl) Select(ctx context.Context, query *RiskUserRevie
 
 func (d *riskUserReviewDaoImpl) UpdateDecision(ctx context.Context, userID int, decision int8, decisionSource string) error {
 	result := d.db.WithContext(ctx).Model(&model.RiskUserReview{}).
-		Where("user_id = ? and decision=1", userID). // only update if current decision is manual_review (1)
+		Where("user_id = ? and decision= ?", userID, data.DECISION_MANUAL_REVIEW). // only update if current decision is manual_review (1)
 		Updates(map[string]interface{}{
 			"decision":        decision,
 			"decision_source": decisionSource,

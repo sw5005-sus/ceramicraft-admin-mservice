@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/config"
-	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
 	httpdata "github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/log"
 	daopkg "github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/dao"
@@ -117,14 +116,14 @@ func TestUpdateDecision_Success(t *testing.T) {
 	req := &httpdata.UpdateDecisionRequest{
 		UserID:         42,
 		ID:             1,
-		Decision:       data.RESOLVED_BLOCK,
+		Decision:       httpdata.RESOLVED_BLOCK,
 		DecisionSource: "manual",
 	}
 
 	mockDao.On("SelectByUserID", mock.Anything, req.UserID).Return(&model.RiskUserReview{
 		ID:       1,
 		UserID:   42,
-		Decision: data.DECISION_MANUAL_REVIEW,
+		Decision: httpdata.DECISION_MANUAL_REVIEW,
 	}, nil)
 
 	mockStorage.On("AddBlacklist", mock.Anything, req.UserID).Return(nil)
@@ -150,7 +149,7 @@ func TestUpdateDecision_UserNotFound(t *testing.T) {
 	req := &httpdata.UpdateDecisionRequest{
 		UserID:         42,
 		ID:             1,
-		Decision:       data.RESOLVED_BLOCK,
+		Decision:       httpdata.RESOLVED_BLOCK,
 		DecisionSource: "manual",
 	}
 
@@ -183,7 +182,7 @@ func TestUpdateDecision_InvalidDecision(t *testing.T) {
 	mockDao.On("SelectByUserID", mock.Anything, req.UserID).Return(&model.RiskUserReview{
 		ID:       1,
 		UserID:   42,
-		Decision: data.DECISION_MANUAL_REVIEW,
+		Decision: httpdata.DECISION_MANUAL_REVIEW,
 	}, nil)
 
 	err := svc.UpdateDecision(context.Background(), req)
@@ -206,14 +205,14 @@ func TestUpdateDecision_NonManualReview(t *testing.T) {
 	req := &httpdata.UpdateDecisionRequest{
 		UserID:         42,
 		ID:             1,
-		Decision:       data.RESOLVED_BLOCK,
+		Decision:       httpdata.RESOLVED_BLOCK,
 		DecisionSource: "manual",
 	}
 
 	mockDao.On("SelectByUserID", mock.Anything, req.UserID).Return(&model.RiskUserReview{
 		ID:       1,
 		UserID:   42,
-		Decision: data.DECISION_BLOCK, // Not manual
+		Decision: httpdata.DECISION_BLOCK, // Not manual
 	}, nil)
 
 	err := svc.UpdateDecision(context.Background(), req)

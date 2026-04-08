@@ -57,10 +57,10 @@ func (r *riskUserStorageImpl) AddWatchlist(ctx context.Context, userId int) erro
 		Member: userId,
 	})
 	if ret.Err() != nil {
-		log.Logger.Errorf("Failed to add user %d to blacklist: %v", userId, ret.Err())
+		log.Logger.Errorf("Failed to add user %d to watchlist: %v", userId, ret.Err())
 		return ret.Err()
 	}
-	log.Logger.Infof("Added user %d to blacklist with expiration at %v", userId, expireTime)
+	log.Logger.Infof("Added user %d to watchlist with expiration at %v", userId, expireTime)
 	return nil
 }
 
@@ -72,10 +72,10 @@ func (r *riskUserStorageImpl) AddWhitelist(ctx context.Context, userId int) erro
 		Member: userId,
 	})
 	if ret.Err() != nil {
-		log.Logger.Errorf("Failed to add user %d to blacklist: %v", userId, ret.Err())
+		log.Logger.Errorf("Failed to add user %d to whitelist: %v", userId, ret.Err())
 		return ret.Err()
 	}
-	log.Logger.Infof("Added user %d to blacklist with expiration at %v", userId, expireTime)
+	log.Logger.Infof("Added user %d to whitelist with expiration at %v", userId, expireTime)
 	return nil
 }
 

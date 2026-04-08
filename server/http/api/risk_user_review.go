@@ -59,6 +59,11 @@ func UpdateDecision(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, data.BaseResponse{ErrMsg: err.Error()})
 		return
 	}
+	reviewId := c.Param("review_id")
+	if reviewId != fmt.Sprintf("%d", req.ID) {
+		c.JSON(http.StatusBadRequest, data.BaseResponse{ErrMsg: "review_id in path does not match id in body"})
+		return	
+	}
 	userId, exist := c.Get("userID")
 	if !exist {
 		c.JSON(http.StatusUnauthorized, data.BaseResponse{ErrMsg: "userID not found in context"})
