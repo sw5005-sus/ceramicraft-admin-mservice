@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/config"
-	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/model"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -35,12 +34,6 @@ func Init() {
 			SkipDefaultTransaction: true,
 			TranslateError:         true,
 		},
-	)
-	if err != nil {
-		panic(err)
-	}
-	err = DB.AutoMigrate(
-		&model.Item{},
 	)
 	if err != nil {
 		panic(err)
