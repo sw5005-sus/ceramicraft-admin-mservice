@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Risk User Review</title>
-  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.13.6/dist/index.css" />
   <style>
     body {
       margin: 0;
@@ -25,24 +25,99 @@
       background: #fef0f0; border: 1px solid #f56c6c; border-radius: 6px;
       padding: 12px 16px; margin-bottom: 16px; color: #f56c6c; font-size: 13px;
     }
-    .token-input-wrap { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
-    .token-input-wrap input {
-      flex: 1; padding: 4px 8px; border: 1px solid #dcdfe6;
-      border-radius: 4px; font-size: 13px; outline: none;
+  
+    .table-wrapper {
+      width: 100%;
+      overflow-x: auto;
+    }
+  
+    .rur-table {
+      width: 100%;
+      min-width: 1020px;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #fff;
+      border: 1px solid #ebeef5;
+    }
+  
+    .rur-table th,
+    .rur-table td {
+      border: 1px solid #ebeef5;
+      padding: 12px;
+      text-align: left;
+      vertical-align: middle;
+      box-sizing: border-box;
+    }
+  
+    .rur-table th {
+      background: #f5f7fa;
+      color: #909399;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+  
+    .rur-table td {
+      color: #606266;
+      background: #fff;
+    }
+  
+    .rur-table tbody tr:nth-child(even) td {
+      background: #fafafa;
+    }
+  
+    .nowrap-cell {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .nice-select {
+      width: 220px;
+      height: 34px;
+      padding: 0 30px 0 10px;
+
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #fff;
+
+      font-size: 14px;
+      color: #606266;
+
+      outline: none;
+      cursor: pointer;
+
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+
+      transition: border-color 0.2s;
+    }
+
+    .nice-select:hover {
+      border-color: #c0c4cc;
+    }
+
+    .nice-select:focus {
+      border-color: #409eff;
+      box-shadow: 0 0 0 2px rgba(64,158,255,0.2);
+    }
+
+    .nice-select {
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23909099' d='M512 682L192 362h640z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+    }
+
+    .nice-select:disabled {
+      background-color: #f5f7fa;
+      cursor: not-allowed;
     }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="page-header">Risk User Review</div>
-
-    <div v-if="!hasToken" class="auth-notice">
-      No auth token found. Please provide your Bearer token to use this page.
-      <div class="token-input-wrap">
-        <input type="password" v-model="tokenInput" placeholder="Paste your Bearer token here" @keydown.enter="saveToken" />
-        <el-button type="primary" size="small" @click="saveToken">Save &amp; Load</el-button>
-      </div>
-    </div>
 
     <el-card class="filter-card">
       <div class="filter-row">
@@ -83,35 +158,64 @@
       </div>
     </el-card>
 
-    <el-card>
-      <el-table :data="tableData" v-loading="loading" border stripe style="width:100%">
-        <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="user_id" label="User ID" width="90" />
-        <el-table-column label="Create Time" width="170">
-          <template #default="{ row }">{{ formatTime(row.create_time) }}</template>
-        </el-table-column>
-        <el-table-column prop="risk_score" label="Risk Score" width="100" />
-        <el-table-column prop="risk_level" label="Risk Level" width="110" />
-        <el-table-column label="Decision" width="155">
-          <template #default="{ row }">
-            <el-tag :type="decisionTagType(row.decision)" size="small">{{ decisionLabel(row.decision) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="decision_source" label="Decision Source" min-width="160" show-overflow-tooltip />
-        <el-table-column label="Actions" width="155" fixed="right">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button size="small" @click="viewDetail(row)">Detail</el-button>
-              <el-button
-                size="small"
-                type="warning"
-                v-if="row.decision === DECISION_MANUAL_REVIEW"
-                @click="openUpdateDialog(row)"
-              >Update</el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
+    <el-card v-loading="loading">
+      <div class="table-wrapper">
+        <table class="rur-table">
+          <colgroup>
+            <col style="width: 80px" />
+            <col style="width: 90px" />
+            <col style="width: 170px" />
+            <col style="width: 100px" />
+            <col style="width: 110px" />
+            <col style="width: 155px" />
+            <col style="width: 160px" />
+            <col style="width: 155px" />
+          </colgroup>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>User ID</th>
+              <th>Create Time</th>
+              <th>Risk Score</th>
+              <th>Risk Level</th>
+              <th>Decision</th>
+              <th>Decision Source</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-if="!tableData.length">
+              <td colspan="8" style="text-align: center; color: #909399;">No Data</td>
+            </tr>
+            <tr v-for="row in tableData" :key="row.id">
+              <td class="nowrap-cell">{{ row.id ?? '-' }}</td>
+              <td class="nowrap-cell">{{ row.user_id ?? '-' }}</td>
+              <td class="nowrap-cell">{{ formatTime(row.create_time) }}</td>
+              <td class="nowrap-cell">{{ row.risk_score ?? '-' }}</td>
+              <td class="nowrap-cell">{{ row.risk_level ?? '-' }}</td>
+              <td class="nowrap-cell">
+                <el-tag :type="decisionTagType(row.decision)" size="small">
+                  {{ decisionLabel(row.decision) }}
+                </el-tag>
+              </td>
+              <td class="nowrap-cell" :title="row.decision_source || '-'">
+                {{ row.decision_source || '-' }}
+              </td>
+              <td class="nowrap-cell">
+                <div class="table-actions">
+                  <el-button size="small" @click="viewDetail(row)">Detail</el-button>
+                  <el-button
+                    size="small"
+                    type="warning"
+                    v-if="row.decision === DECISION_MANUAL_REVIEW"
+                    @click="openUpdateDialog(row)"
+                  >Update</el-button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <div class="pagination-wrap">
         <el-pagination
@@ -140,11 +244,12 @@
       </el-descriptions>
       <el-form label-width="120px">
         <el-form-item label="New Decision" required>
-          <el-select v-model="newDecision" placeholder="Select resolved decision" style="width:200px">
-            <el-option label="Resolved - Block"     :value="RESOLVED_BLOCK" />
-            <el-option label="Resolved - Whitelist" :value="RESOLVED_WHITELIST" />
-            <el-option label="Resolved - Watchlist" :value="RESOLVED_WATCHLIST" />
-          </el-select>
+          <select v-model.number="newDecision" class="nice-select">
+            <option disabled value="">Select resolved decision</option>
+            <option :value="RESOLVED_BLOCK">Resolved - Block</option>
+            <option :value="RESOLVED_WHITELIST">Resolved - Whitelist</option>
+            <option :value="RESOLVED_WATCHLIST">Resolved - Watchlist</option>
+          </select>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -204,9 +309,6 @@
 
     createApp({
       setup() {
-        const tokenInput = ref('');
-        const hasToken = computed(() => !!localStorage.getItem('rur_token'));
-
         const filter = reactive({
           user_id: '',
           decision: '',
@@ -225,19 +327,6 @@
         const newDecision         = ref('');
         const updateLoading       = ref(false);
 
-        function getToken() {
-          return localStorage.getItem('rur_token') || '';
-        }
-
-        function saveToken() {
-          const t = tokenInput.value.trim();
-          if (!t) { ElementPlus.ElMessage.warning('Token cannot be empty'); return; }
-          localStorage.setItem('rur_token', t);
-          tokenInput.value = '';
-          ElementPlus.ElMessage.success('Token saved');
-          fetchList(1);
-        }
-
         async function fetchList(p) {
           if (typeof p === 'number') page.value = p;
           loading.value = true;
@@ -251,7 +340,6 @@
             params.set('page_size', pageSize.value);
 
             const resp = await fetch('/admin-ms/v1/merchant/risk-user-reviews?' + params.toString(), {
-              headers: { 'Authorization': 'Bearer ' + getToken() },
             });
             const json = await resp.json();
             if (json.err_msg) {
@@ -304,7 +392,6 @@
                 method: 'PUT',
                 headers: {
                   'Content-Type':  'application/json',
-                  'Authorization': 'Bearer ' + getToken(),
                 },
                 body: JSON.stringify(body),
               }
@@ -329,7 +416,6 @@
         return {
           DECISION_MANUAL_REVIEW, RESOLVED_BLOCK, RESOLVED_WHITELIST, RESOLVED_WATCHLIST,
           decisionOptions, decisionLabel, decisionTagType, formatTime,
-          tokenInput, hasToken, saveToken,
           filter, loading, tableData, total, page, pageSize,
           updateDialogVisible, selectedRow, newDecision, updateLoading,
           fetchList, resetFilter, viewDetail, openUpdateDialog, submitUpdateDecision,

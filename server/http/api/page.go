@@ -15,10 +15,16 @@ var riskUserReviewDetailHTML []byte
 
 // RiskUserReviewListPage serves the static HTML page for risk user review list.
 func RiskUserReviewListPage(c *gin.Context) {
+	c.Header("Cache-Control", "no-store, no-cache, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
 	c.Data(http.StatusOK, "text/html; charset=utf-8", riskUserReviewListHTML)
 }
 
 // RiskUserReviewDetailPage serves the static HTML page for risk user review detail.
 func RiskUserReviewDetailPage(c *gin.Context) {
+	c.Header("Cache-Control", "no-store, no-cache, must-revalidate")
+	c.Header("Pragma", "no-cache")
+	c.Header("Expires", "0")
 	c.Data(http.StatusOK, "text/html; charset=utf-8", riskUserReviewDetailHTML)
 }

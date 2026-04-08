@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Risk User Review - Detail</title>
-  <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css" />
+  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.13.6/dist/index.css" />
   <style>
     body {
       margin: 0;
@@ -20,6 +20,35 @@
     }
     .not-found p { margin: 12px 0 24px; font-size: 14px; }
     .action-bar { margin-top: 24px; display: flex; gap: 8px; }
+
+    .nice-select {
+      width: 220px;
+      height: 34px;
+      padding: 0 30px 0 10px;
+      border: 1px solid #dcdfe6;
+      border-radius: 4px;
+      background-color: #fff;
+      font-size: 14px;
+      color: #606266;
+      outline: none;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23909099' d='M512 682L192 362h640z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 12px;
+      box-sizing: border-box;
+    }
+    .nice-select:hover {
+      border-color: #c0c4cc;
+    }
+    .nice-select:focus {
+      border-color: #409eff;
+      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -67,7 +96,6 @@
       </div>
     </el-card>
 
-    <!-- Update Decision Dialog -->
     <el-dialog v-model="updateDialogVisible" title="Update Decision" width="420px" :close-on-click-modal="false">
       <el-descriptions :column="1" border size="small" style="margin-bottom:16px">
         <el-descriptions-item label="Review ID">{{ record && record.id }}</el-descriptions-item>
@@ -78,15 +106,18 @@
           </el-tag>
         </el-descriptions-item>
       </el-descriptions>
+
       <el-form label-width="120px">
         <el-form-item label="New Decision" required>
-          <el-select v-model="newDecision" placeholder="Select resolved decision" style="width:200px">
-            <el-option label="Resolved - Block"     :value="RESOLVED_BLOCK" />
-            <el-option label="Resolved - Whitelist" :value="RESOLVED_WHITELIST" />
-            <el-option label="Resolved - Watchlist" :value="RESOLVED_WATCHLIST" />
-          </el-select>
+          <select v-model.number="newDecision" class="nice-select">
+            <option disabled value="">Select resolved decision</option>
+            <option :value="RESOLVED_BLOCK">Resolved - Block</option>
+            <option :value="RESOLVED_WHITELIST">Resolved - Whitelist</option>
+            <option :value="RESOLVED_WATCHLIST">Resolved - Watchlist</option>
+          </select>
         </el-form-item>
       </el-form>
+
       <template #footer>
         <el-button @click="updateDialogVisible = false">Cancel</el-button>
         <el-button type="primary" :loading="updateLoading" @click="submitUpdateDecision">Confirm</el-button>
@@ -137,10 +168,6 @@
       return parts[parts.length - 1];
     }
 
-    function getToken() {
-      return localStorage.getItem('rur_token') || '';
-    }
-
     createApp({
       setup() {
         const record              = ref(null);
@@ -152,7 +179,7 @@
           const id = getReviewIdFromPath();
           const stored = sessionStorage.getItem('rur_detail_' + id);
           if (stored) {
-            try { record.value = JSON.parse(stored); } catch (e) { /* ignore */ }
+            try { record.value = JSON.parse(stored); } catch (e) {}
           }
         });
 
@@ -170,15 +197,15 @@
         }
 
         async function submitUpdateDecision() {
-          if (newDecision.value === '') {
+          if (newDecision.value === '' || newDecision.value === null || newDecision.value === undefined) {
             ElementPlus.ElMessage.warning('Please select a resolved decision');
             return;
           }
           updateLoading.value = true;
           try {
             const body = {
-              id:       record.value.id,
-              user_id:  record.value.user_id,
+              id: record.value.id,
+              user_id: record.value.user_id,
               decision: newDecision.value,
             };
             const resp = await fetch(
@@ -186,8 +213,7 @@
               {
                 method: 'PUT',
                 headers: {
-                  'Content-Type':  'application/json',
-                  'Authorization': 'Bearer ' + getToken(),
+                  'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(body),
               }
