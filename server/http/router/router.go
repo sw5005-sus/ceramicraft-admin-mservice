@@ -36,7 +36,7 @@ func NewRouter() *gin.Engine {
 		v1Authed.GET("/audit-logs", middleware.RequireRoles("merchant_admin"), api.GetAuditLogs)
 		v1Authed.GET("/audit-logs/verify", middleware.RequireRoles("merchant_admin"), api.VerifyAuditLogs)
 		v1Authed.GET("/risk-user-reviews", middleware.RequireRoles("merchant_admin"), api.GetRiskUserReviews)
-		v1Authed.PUT("/risk-user-reviews/decision", middleware.RequireRoles("merchant_admin"), api.UpdateDecision)
+		v1Authed.PUT("/risk-user-reviews/:review_id/decision", middleware.RequireRoles("merchant_admin"), api.UpdateDecision)
 	}
 	return r
 }

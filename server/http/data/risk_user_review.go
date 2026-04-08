@@ -1,5 +1,17 @@
 package data
 
+const (
+	DECISION_MANUAL_REVIEW = 1
+	DECISION_BLOCK         = 2
+	DECISION_WATCHLIST     = 3
+	DECISION_ALLOW         = 4
+	DECISION_UNRECOGNIZED  = 0
+
+	RESOLVED_BLOCK     = 10
+	RESOLVED_WHITELIST = 11
+	RESOLVED_WATCHLIST = 12
+)
+
 // RiskUserReview is the response representation of a risk user review record.
 type RiskUserReview struct {
 	ID               int64   `json:"id"`
@@ -18,12 +30,12 @@ type RiskUserReview struct {
 
 // RiskUserReviewListRequest defines query parameters for the page query API.
 type RiskUserReviewListRequest struct {
-	UserID    int    `form:"user_id"`
-	Decision  *int8  `form:"decision"`
-	StartTime int64  `form:"start_time"`
-	EndTime   int64  `form:"end_time"`
-	Page      int    `form:"page"`
-	PageSize  int    `form:"page_size"`
+	UserID    int   `form:"user_id"`
+	Decision  *int8 `form:"decision"`
+	StartTime int64 `form:"start_time"`
+	EndTime   int64 `form:"end_time"`
+	Page      int   `form:"page"`
+	PageSize  int   `form:"page_size"`
 }
 
 // RiskUserReviewListResponse is the paginated response for the list API.
@@ -34,6 +46,7 @@ type RiskUserReviewListResponse struct {
 
 // UpdateDecisionRequest defines the request body for the update-decision API.
 type UpdateDecisionRequest struct {
+	ID             int    `json:"id" binding:"required"`
 	UserID         int    `json:"user_id" binding:"required"`
 	Decision       int8   `json:"decision"`
 	DecisionSource string `json:"decision_source"`

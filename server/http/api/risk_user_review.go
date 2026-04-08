@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -46,18 +47,24 @@ func GetRiskUserReviews(c *gin.Context) {
 // @Tags         RiskUserReview
 // @Accept       json
 // @Produce      json
+// @Param        review_id    path  int    true  "record ID of the risk user review to update"
 // @Param        body  body  data.UpdateDecisionRequest  true  "Update decision request"
 // @Success      200  {object}  data.BaseResponse
 // @Failure      400  {object}  data.BaseResponse{data=string}
 // @Failure      500  {object}  data.BaseResponse{data=string}
-// @Router       /admin-ms/v1/merchant/risk-user-reviews/decision [put]
+// @Router       /admin-ms/v1/merchant/risk-user-reviews/{review_id}/decision [put]
 func UpdateDecision(c *gin.Context) {
 	req := &data.UpdateDecisionRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		c.JSON(http.StatusBadRequest, data.BaseResponse{ErrMsg: err.Error()})
 		return
 	}
-
+	userId, exist := c.Get("userID")
+	if !exist {
+		c.JSON(http.StatusUnauthorized, data.BaseResponse{ErrMsg: "userID not found in context"})
+		return
+	}
+	req.DecisionSource = fmt.Sprintf("manual_review_by_user_%d", userId)
 	if err := service.GetRiskUserReviewService().UpdateDecision(c.Request.Context(), req); err != nil {
 		c.JSON(http.StatusInternalServerError, data.BaseResponse{ErrMsg: err.Error()})
 		return

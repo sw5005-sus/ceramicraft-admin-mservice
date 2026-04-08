@@ -26,6 +26,8 @@ type RiskUserReviewQuery struct {
 type RiskUserReviewDao interface {
 	// Select returns a paginated list matching query and the total matching count.
 	Select(ctx context.Context, query *RiskUserReviewQuery) ([]*model.RiskUserReview, int64, error)
+	// SelectByUserID returns the risk user review for the given user ID, or nil if not found.
+	SelectByUserID(ctx context.Context, userID int) (*model.RiskUserReview, error)
 	// UpdateDecision updates the decision and decision_source fields for the given user.
 	UpdateDecision(ctx context.Context, userID int, decision int8, decisionSource string) error
 }
@@ -47,6 +49,20 @@ func GetRiskUserReviewDao() RiskUserReviewDao {
 		}
 	})
 	return riskUserReviewDao
+}
+
+// SelectByUserID implements [RiskUserReviewDao].
+func (d *riskUserReviewDaoImpl) SelectByUserID(ctx context.Context, userID int) (*model.RiskUserReview, error) {
+	var review model.RiskUserReview
+	err := d.db.WithContext(ctx).Where("user_id = ?", userID).First(&review).Error
+	if err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil
+		}
+		log.Logger.Errorf("RiskUserReviewDao.SelectByUserID error: %v", err)
+		return nil, err
+	}
+	return &review, nil
 }
 
 func (d *riskUserReviewDaoImpl) Select(ctx context.Context, query *RiskUserReviewQuery) ([]*model.RiskUserReview, int64, error) {
@@ -91,7 +107,7 @@ func (d *riskUserReviewDaoImpl) Select(ctx context.Context, query *RiskUserRevie
 
 func (d *riskUserReviewDaoImpl) UpdateDecision(ctx context.Context, userID int, decision int8, decisionSource string) error {
 	result := d.db.WithContext(ctx).Model(&model.RiskUserReview{}).
-		Where("user_id = ?", userID).
+		Where("user_id = ? and decision=1", userID). // only update if current decision is manual_review (1)
 		Updates(map[string]interface{}{
 			"decision":        decision,
 			"decision_source": decisionSource,

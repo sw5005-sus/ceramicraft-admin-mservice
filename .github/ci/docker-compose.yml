@@ -10,7 +10,20 @@ services:
     networks:
       ci-net:
         aliases:
-          - mysql-container  
+          - mysql-container
+  
+  redis-container:
+    image: redis:7.0
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+    networks:
+      ci-net:
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
 
   ceramicraft-admin-mservice:
     build:
@@ -21,6 +34,7 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}
     depends_on:
       - mysql
+      - redis-container
     networks:
       - ci-net
     ports:

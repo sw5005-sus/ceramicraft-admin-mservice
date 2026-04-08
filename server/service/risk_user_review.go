@@ -4,9 +4,12 @@ import (
 	"context"
 	"sync"
 
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
 	httpdata "github.com/sw5005-sus/ceramicraft-admin-mservice/server/http/data"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/log"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/dao"
 	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/model"
+	"github.com/sw5005-sus/ceramicraft-admin-mservice/server/repository/redis"
 )
 
 // RiskUserReviewService defines the business operations for risk user reviews.
@@ -18,7 +21,8 @@ type RiskUserReviewService interface {
 }
 
 type riskUserReviewServiceImpl struct {
-	dao dao.RiskUserReviewDao
+	dao             dao.RiskUserReviewDao
+	riskUserStorage redis.RiskUserStorage
 }
 
 var (
@@ -31,7 +35,8 @@ func GetRiskUserReviewService() RiskUserReviewService {
 	riskUserReviewSvcOnce.Do(func() {
 		if riskUserReviewSvc == nil {
 			riskUserReviewSvc = &riskUserReviewServiceImpl{
-				dao: dao.GetRiskUserReviewDao(),
+				dao:             dao.GetRiskUserReviewDao(),
+				riskUserStorage: redis.GetRiskUserStorage(),
 			}
 		}
 	})
@@ -65,6 +70,35 @@ func (s *riskUserReviewServiceImpl) GetRiskUserReviews(ctx context.Context, req 
 }
 
 func (s *riskUserReviewServiceImpl) UpdateDecision(ctx context.Context, req *httpdata.UpdateDecisionRequest) error {
+	riskUser, err := s.dao.SelectByUserID(ctx, req.UserID)
+	if err != nil {
+		return err
+	}
+	if riskUser == nil || riskUser.ID != int64(req.ID) {
+		log.Logger.Warnf("Risk user review with ID %d for user %d not found, skipping update", req.ID, req.UserID)
+		return nil // or return an error if you want to enforce existence
+	}
+	if riskUser.Decision != data.DECISION_MANUAL_REVIEW {
+		log.Logger.Warnf("User %d decision is not MANUAL_REVIEW, skipping update", req.UserID)
+		return nil // no update needed
+	}
+	switch req.Decision {
+	case data.RESOLVED_BLOCK:
+		if err := s.riskUserStorage.AddBlacklist(ctx, req.UserID); err != nil {
+			return err
+		}
+	case data.RESOLVED_WHITELIST:
+		if err := s.riskUserStorage.AddWhitelist(ctx, req.UserID); err != nil {
+			return err
+		}
+	case data.RESOLVED_WATCHLIST:
+		if err := s.riskUserStorage.AddWatchlist(ctx, req.UserID); err != nil {
+			return err
+		}
+	default:
+		log.Logger.Warnf("Invalid decision %d for user %d, skipping update", req.Decision, req.UserID)
+		return nil // no update needed
+	}
 	return s.dao.UpdateDecision(ctx, req.UserID, req.Decision, req.DecisionSource)
 }
 
