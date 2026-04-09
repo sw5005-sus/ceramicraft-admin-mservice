@@ -4,423 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Risk User Review</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      background: #f5f7fa;
-      font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
-      color: #303133;
-    }
-
-    #app {
-      padding: 24px;
-    }
-
-    .page-header {
-      font-size: 20px;
-      font-weight: 600;
-      color: #303133;
-      margin-bottom: 20px;
-    }
-
-    .card {
-      background: #fff;
-      border: 1px solid #ebeef5;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-
-    .filter-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: flex-end;
-    }
-
-    .filter-item {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .filter-item label {
-      font-size: 13px;
-      color: #606266;
-    }
-
-    .text-input,
-    .select-input,
-    .datetime-input {
-      height: 34px;
-      min-width: 120px;
-      padding: 0 10px;
-      border: 1px solid #dcdfe6;
-      border-radius: 4px;
-      background: #fff;
-      color: #606266;
-      font-size: 14px;
-      outline: none;
-    }
-
-    .text-input:focus,
-    .select-input:focus,
-    .datetime-input:focus {
-      border-color: #409eff;
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.15);
-    }
-
-    .filter-actions {
-      display: flex;
-      gap: 8px;
-      padding-top: 19px;
-    }
-
-    .btn {
-      height: 34px;
-      padding: 0 14px;
-      border: 1px solid #dcdfe6;
-      background: #fff;
-      color: #606266;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
-    }
-
-    .btn:hover {
-      border-color: #c6e2ff;
-      color: #409eff;
-      background: #ecf5ff;
-    }
-
-    .btn:disabled {
-      cursor: not-allowed;
-      opacity: 0.65;
-    }
-
-    .btn-primary {
-      background: #409eff;
-      border-color: #409eff;
-      color: #fff;
-    }
-
-    .btn-primary:hover {
-      background: #66b1ff;
-      border-color: #66b1ff;
-      color: #fff;
-    }
-
-    .btn-warning {
-      background: #e6a23c;
-      border-color: #e6a23c;
-      color: #fff;
-    }
-
-    .btn-warning:hover {
-      background: #ebb563;
-      border-color: #ebb563;
-      color: #fff;
-    }
-
-    .table-wrapper {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    .rur-table {
-      width: 100%;
-      min-width: 1020px;
-      border-collapse: collapse;
-      table-layout: fixed;
-      background: #fff;
-      border: 1px solid #ebeef5;
-    }
-
-    .rur-table th,
-    .rur-table td {
-      border: 1px solid #ebeef5;
-      padding: 12px;
-      text-align: left;
-      vertical-align: middle;
-    }
-
-    .rur-table th {
-      background: #f5f7fa;
-      color: #909399;
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .rur-table td {
-      color: #606266;
-      background: #fff;
-    }
-
-    .rur-table tbody tr:nth-child(even) td {
-      background: #fafafa;
-    }
-
-    .nowrap-cell {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .table-actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: nowrap;
-    }
-
-    .tag {
-      display: inline-block;
-      height: 24px;
-      line-height: 22px;
-      padding: 0 8px;
-      border-radius: 4px;
-      border: 1px solid transparent;
-      font-size: 12px;
-      white-space: nowrap;
-    }
-
-    .tag-info {
-      color: #909399;
-      background: #f4f4f5;
-      border-color: #e9e9eb;
-    }
-
-    .tag-warning {
-      color: #e6a23c;
-      background: #fdf6ec;
-      border-color: #faecd8;
-    }
-
-    .tag-danger {
-      color: #f56c6c;
-      background: #fef0f0;
-      border-color: #fde2e2;
-    }
-
-    .tag-success {
-      color: #67c23a;
-      background: #f0f9eb;
-      border-color: #e1f3d8;
-    }
-
-    .pagination-wrap {
-      margin-top: 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .pagination-left,
-    .pagination-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .page-info {
-      color: #606266;
-      font-size: 14px;
-    }
-
-    .page-number {
-      min-width: 34px;
-      height: 34px;
-      padding: 0 10px;
-      border: 1px solid #dcdfe6;
-      border-radius: 4px;
-      background: #fff;
-      cursor: pointer;
-      color: #606266;
-    }
-
-    .page-number.active {
-      background: #409eff;
-      border-color: #409eff;
-      color: #fff;
-    }
-
-    .loading-mask {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(255, 255, 255, 0.55);
-      z-index: 999;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
-      color: #409eff;
-    }
-
-    .loading-mask.show {
-      display: flex;
-    }
-
-    .dialog-mask {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.45);
-      z-index: 1000;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .dialog-mask.show {
-      display: flex;
-    }
-
-    .dialog {
-      width: 420px;
-      max-width: 100%;
-      background: #fff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
-    }
-
-    .dialog-header {
-      padding: 16px 20px;
-      border-bottom: 1px solid #ebeef5;
-      font-size: 16px;
-      font-weight: 600;
-      color: #303133;
-    }
-
-    .dialog-body {
-      padding: 16px 20px;
-    }
-
-    .desc-table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 16px;
-    }
-
-    .desc-table th,
-    .desc-table td {
-      border: 1px solid #ebeef5;
-      padding: 10px 12px;
-      text-align: left;
-      font-size: 14px;
-    }
-
-    .desc-table th {
-      width: 120px;
-      background: #fafafa;
-      color: #606266;
-      font-weight: 600;
-    }
-
-    .form-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-top: 8px;
-    }
-
-    .form-row label {
-      width: 108px;
-      color: #606266;
-      font-size: 14px;
-      flex-shrink: 0;
-    }
-
-    .nice-select {
-      width: 220px;
-      height: 34px;
-      padding: 0 30px 0 10px;
-      border: 1px solid #dcdfe6;
-      border-radius: 4px;
-      background-color: #fff;
-      font-size: 14px;
-      color: #606266;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23909099' d='M512 682L192 362h640z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      background-size: 12px;
-    }
-
-    .nice-select:hover {
-      border-color: #c0c4cc;
-    }
-
-    .nice-select:focus {
-      border-color: #409eff;
-      box-shadow: 0 0 0 2px rgba(64,158,255,0.2);
-    }
-
-    .dialog-footer {
-      padding: 12px 20px 16px;
-      border-top: 1px solid #ebeef5;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-    }
-
-    .empty-text {
-      text-align: center;
-      color: #909399;
-    }
-
-    .toast-wrap {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      z-index: 1200;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .toast {
-      min-width: 240px;
-      max-width: 360px;
-      padding: 12px 14px;
-      border-radius: 6px;
-      background: #fff;
-      border: 1px solid #ebeef5;
-      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
-      font-size: 14px;
-    }
-
-    .toast-success {
-      border-color: #e1f3d8;
-      background: #f0f9eb;
-      color: #67c23a;
-    }
-
-    .toast-error {
-      border-color: #fde2e2;
-      background: #fef0f0;
-      color: #f56c6c;
-    }
-
-    .toast-warning {
-      border-color: #faecd8;
-      background: #fdf6ec;
-      color: #e6a23c;
-    }
-  </style>
+  <link rel="stylesheet" href="/admin-ms/v1/merchant/risk-user-reviews/risk_user_review.css?v=0.0.1" />
 </head>
 <body>
   <div id="app">
@@ -435,24 +19,24 @@
 
         <div class="filter-item">
           <label for="decisionSelect">Decision</label>
-          <select id="decisionSelect" class="select-input" style="width:180px">
+          <select id="decisionSelect" class="select-input w-180">
             <option value="">All</option>
           </select>
         </div>
 
         <div class="filter-item">
           <label for="startTimeInput">Start Time</label>
-          <input id="startTimeInput" class="datetime-input" type="datetime-local" style="width:190px" />
+          <input id="startTimeInput" class="datetime-input w-190" type="datetime-local" />
         </div>
 
         <div class="filter-item">
           <label for="endTimeInput">End Time</label>
-          <input id="endTimeInput" class="datetime-input" type="datetime-local" style="width:190px" />
+          <input id="endTimeInput" class="datetime-input w-190" type="datetime-local" />
         </div>
 
         <div class="filter-actions">
-          <button id="searchBtn" class="btn btn-primary">Search</button>
-          <button id="resetBtn" class="btn">Reset</button>
+          <button id="searchBtn" class="btn btn-primary" type="button">Search</button>
+          <button id="resetBtn" class="btn" type="button">Reset</button>
         </div>
       </div>
     </div>
@@ -461,14 +45,14 @@
       <div class="table-wrapper">
         <table class="rur-table">
           <colgroup>
-            <col style="width: 80px" />
-            <col style="width: 90px" />
-            <col style="width: 170px" />
-            <col style="width: 100px" />
-            <col style="width: 110px" />
-            <col style="width: 155px" />
-            <col style="width: 160px" />
-            <col style="width: 155px" />
+            <col class="col-id" />
+            <col class="col-user-id" />
+            <col class="col-create-time" />
+            <col class="col-risk-score" />
+            <col class="col-risk-level" />
+            <col class="col-decision" />
+            <col class="col-decision-source" />
+            <col class="col-actions" />
           </colgroup>
           <thead>
             <tr>
@@ -496,15 +80,15 @@
         </div>
         <div class="pagination-right">
           <span class="page-info">Page Size</span>
-          <select id="pageSizeSelect" class="select-input" style="width:90px">
+          <select id="pageSizeSelect" class="select-input w-90">
             <option value="10">10</option>
             <option value="20" selected>20</option>
             <option value="50">50</option>
             <option value="100">100</option>
           </select>
-          <button id="prevBtn" class="btn">Prev</button>
-          <button id="pageBtn" class="page-number active">1</button>
-          <button id="nextBtn" class="btn">Next</button>
+          <button id="prevBtn" class="btn" type="button">Prev</button>
+          <button id="pageBtn" class="page-number active" type="button">1</button>
+          <button id="nextBtn" class="btn" type="button">Next</button>
         </div>
       </div>
     </div>
@@ -513,8 +97,8 @@
   <div id="loadingMask" class="loading-mask">Loading...</div>
 
   <div id="dialogMask" class="dialog-mask">
-    <div class="dialog">
-      <div class="dialog-header">Update Decision</div>
+    <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle">
+      <div id="dialogTitle" class="dialog-header">Update Decision</div>
       <div class="dialog-body">
         <table class="desc-table">
           <tr>
@@ -542,362 +126,14 @@
         </div>
       </div>
       <div class="dialog-footer">
-        <button id="cancelDialogBtn" class="btn">Cancel</button>
-        <button id="confirmDialogBtn" class="btn btn-primary">Confirm</button>
+        <button id="cancelDialogBtn" class="btn" type="button">Cancel</button>
+        <button id="confirmDialogBtn" class="btn btn-primary" type="button">Confirm</button>
       </div>
     </div>
   </div>
 
   <div id="toastWrap" class="toast-wrap"></div>
 
-  <script>
-    const DECISION_MANUAL_REVIEW = 1;
-    const DECISION_BLOCK = 2;
-    const DECISION_WATCHLIST = 3;
-    const DECISION_ALLOW = 4;
-    const DECISION_UNRECOGNIZED = 0;
-    const RESOLVED_BLOCK = 10;
-    const RESOLVED_WHITELIST = 11;
-    const RESOLVED_WATCHLIST = 12;
-
-    const decisionOptions = [
-      { label: 'Unrecognized', value: DECISION_UNRECOGNIZED },
-      { label: 'Manual Review', value: DECISION_MANUAL_REVIEW },
-      { label: 'Block', value: DECISION_BLOCK },
-      { label: 'Watchlist', value: DECISION_WATCHLIST },
-      { label: 'Allow', value: DECISION_ALLOW },
-      { label: 'Resolved - Block', value: RESOLVED_BLOCK },
-      { label: 'Resolved - Whitelist', value: RESOLVED_WHITELIST },
-      { label: 'Resolved - Watchlist', value: RESOLVED_WATCHLIST },
-    ];
-
-    const state = {
-      filter: {
-        user_id: '',
-        decision: '',
-        start_time_ms: '',
-        end_time_ms: '',
-      },
-      loading: false,
-      tableData: [],
-      total: 0,
-      page: 1,
-      pageSize: 20,
-      selectedRow: null,
-      updateLoading: false,
-    };
-
-    const els = {
-      userIdInput: document.getElementById('userIdInput'),
-      decisionSelect: document.getElementById('decisionSelect'),
-      startTimeInput: document.getElementById('startTimeInput'),
-      endTimeInput: document.getElementById('endTimeInput'),
-      searchBtn: document.getElementById('searchBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      tableBody: document.getElementById('tableBody'),
-      pageInfo: document.getElementById('pageInfo'),
-      pageSizeSelect: document.getElementById('pageSizeSelect'),
-      prevBtn: document.getElementById('prevBtn'),
-      nextBtn: document.getElementById('nextBtn'),
-      pageBtn: document.getElementById('pageBtn'),
-      loadingMask: document.getElementById('loadingMask'),
-      dialogMask: document.getElementById('dialogMask'),
-      dialogReviewId: document.getElementById('dialogReviewId'),
-      dialogUserId: document.getElementById('dialogUserId'),
-      dialogCurrentDecision: document.getElementById('dialogCurrentDecision'),
-      newDecisionSelect: document.getElementById('newDecisionSelect'),
-      cancelDialogBtn: document.getElementById('cancelDialogBtn'),
-      confirmDialogBtn: document.getElementById('confirmDialogBtn'),
-      toastWrap: document.getElementById('toastWrap'),
-    };
-
-    function decisionLabel(val) {
-      const opt = decisionOptions.find(o => o.value === Number(val));
-      return opt ? opt.label : String(val);
-    }
-
-    function decisionTagClass(val) {
-      switch (Number(val)) {
-        case DECISION_MANUAL_REVIEW: return 'tag-warning';
-        case DECISION_BLOCK: return 'tag-danger';
-        case DECISION_ALLOW: return 'tag-success';
-        case RESOLVED_BLOCK: return 'tag-danger';
-        case RESOLVED_WHITELIST: return 'tag-success';
-        default: return 'tag-info';
-      }
-    }
-
-    function formatTime(ts) {
-      if (ts === null || ts === undefined || ts === '') return '-';
-      return new Date(Number(ts) * 1000).toLocaleString();
-    }
-
-    function datetimeLocalToUnix(value) {
-      if (!value) return '';
-      const date = new Date(value);
-      if (Number.isNaN(date.getTime())) return '';
-      return Math.floor(date.getTime() / 1000);
-    }
-
-    function setLoading(flag) {
-      state.loading = flag;
-      els.loadingMask.classList.toggle('show', flag);
-      els.searchBtn.disabled = flag;
-      els.resetBtn.disabled = flag;
-      els.prevBtn.disabled = flag;
-      els.nextBtn.disabled = flag;
-      els.pageSizeSelect.disabled = flag;
-    }
-
-    function showToast(message, type = 'success') {
-      const toast = document.createElement('div');
-      toast.className = 'toast toast-' + type;
-      toast.textContent = message;
-      els.toastWrap.appendChild(toast);
-      setTimeout(() => {
-        toast.remove();
-      }, 2500);
-    }
-
-    function renderDecisionOptions() {
-      for (const opt of decisionOptions) {
-        const option = document.createElement('option');
-        option.value = String(opt.value);
-        option.textContent = opt.label;
-        els.decisionSelect.appendChild(option);
-      }
-    }
-
-    function renderTable() {
-      if (!state.tableData.length) {
-        els.tableBody.innerHTML = `
-          <tr>
-            <td colspan="8" class="empty-text">No Data</td>
-          </tr>
-        `;
-        return;
-      }
-
-      els.tableBody.innerHTML = state.tableData.map(row => {
-        const actionButtons = [
-          `<button class="btn" data-action="detail" data-id="${row.id}">Detail</button>`
-        ];
-
-        if (Number(row.decision) === DECISION_MANUAL_REVIEW) {
-          actionButtons.push(`<button class="btn btn-warning" data-action="update" data-id="${row.id}">Update</button>`);
-        }
-
-        return `
-          <tr>
-            <td class="nowrap-cell">${escapeHtml(row.id ?? '-')}</td>
-            <td class="nowrap-cell">${escapeHtml(row.user_id ?? '-')}</td>
-            <td class="nowrap-cell">${escapeHtml(formatTime(row.create_time))}</td>
-            <td class="nowrap-cell">${escapeHtml(row.risk_score ?? '-')}</td>
-            <td class="nowrap-cell">${escapeHtml(row.risk_level ?? '-')}</td>
-            <td class="nowrap-cell">
-              <span class="tag ${decisionTagClass(row.decision)}">${escapeHtml(decisionLabel(row.decision))}</span>
-            </td>
-            <td class="nowrap-cell" title="${escapeHtml(row.decision_source || '-')}">${escapeHtml(row.decision_source || '-')}</td>
-            <td class="nowrap-cell">
-              <div class="table-actions">${actionButtons.join('')}</div>
-            </td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderPagination() {
-      const totalPages = Math.max(1, Math.ceil(state.total / state.pageSize));
-      els.pageInfo.textContent = `Total ${state.total} · Page ${state.page} / ${totalPages}`;
-      els.pageBtn.textContent = String(state.page);
-      els.prevBtn.disabled = state.loading || state.page <= 1;
-      els.nextBtn.disabled = state.loading || state.page >= totalPages;
-    }
-
-    function escapeHtml(value) {
-      return String(value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
-    }
-
-    function syncFilterFromInputs() {
-      state.filter.user_id = els.userIdInput.value.trim();
-      state.filter.decision = els.decisionSelect.value;
-      state.filter.start_time_ms = els.startTimeInput.value;
-      state.filter.end_time_ms = els.endTimeInput.value;
-      state.pageSize = Number(els.pageSizeSelect.value);
-    }
-
-    async function fetchList(page) {
-      if (typeof page === 'number') {
-        state.page = page;
-      }
-
-      syncFilterFromInputs();
-      setLoading(true);
-
-      try {
-        const params = new URLSearchParams();
-        if (state.filter.user_id !== '') params.set('user_id', state.filter.user_id);
-        if (state.filter.decision !== '') params.set('decision', state.filter.decision);
-
-        const startTime = datetimeLocalToUnix(state.filter.start_time_ms);
-        const endTime = datetimeLocalToUnix(state.filter.end_time_ms);
-        if (startTime) params.set('start_time', startTime);
-        if (endTime) params.set('end_time', endTime);
-
-        params.set('page', String(state.page));
-        params.set('page_size', String(state.pageSize));
-
-        const resp = await fetch('/admin-ms/v1/merchant/risk-user-reviews?' + params.toString());
-        const json = await resp.json();
-
-        if (json.err_msg) {
-          showToast(json.err_msg, 'error');
-          state.tableData = [];
-          state.total = 0;
-        } else {
-          state.tableData = (json.data && json.data.list) ? json.data.list : [];
-          state.total = (json.data && json.data.total) ? json.data.total : 0;
-        }
-      } catch (e) {
-        showToast('Request failed: ' + e.message, 'error');
-        state.tableData = [];
-        state.total = 0;
-      } finally {
-        setLoading(false);
-        renderTable();
-        renderPagination();
-      }
-    }
-
-    function resetFilter() {
-      els.userIdInput.value = '';
-      els.decisionSelect.value = '';
-      els.startTimeInput.value = '';
-      els.endTimeInput.value = '';
-      state.page = 1;
-      fetchList(1);
-    }
-
-    function viewDetail(row) {
-      sessionStorage.setItem('rur_detail_' + row.id, JSON.stringify(row));
-      window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page/' + row.id;
-    }
-
-    function openUpdateDialog(row) {
-      state.selectedRow = row;
-      els.dialogReviewId.textContent = row.id ?? '-';
-      els.dialogUserId.textContent = row.user_id ?? '-';
-      els.dialogCurrentDecision.innerHTML = `<span class="tag ${decisionTagClass(row.decision)}">${escapeHtml(decisionLabel(row.decision))}</span>`;
-      els.newDecisionSelect.value = '';
-      els.dialogMask.classList.add('show');
-    }
-
-    function closeUpdateDialog() {
-      state.selectedRow = null;
-      els.newDecisionSelect.value = '';
-      els.dialogMask.classList.remove('show');
-    }
-
-    async function submitUpdateDecision() {
-      const newDecision = els.newDecisionSelect.value;
-      if (!newDecision) {
-        showToast('Please select a resolved decision', 'warning');
-        return;
-      }
-      if (!state.selectedRow) return;
-
-      state.updateLoading = true;
-      els.confirmDialogBtn.disabled = true;
-
-      try {
-        const body = {
-          id: state.selectedRow.id,
-          user_id: state.selectedRow.user_id,
-          decision: Number(newDecision),
-        };
-
-        const resp = await fetch(
-          '/admin-ms/v1/merchant/risk-user-reviews/' + state.selectedRow.id + '/decision',
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(body),
-          }
-        );
-
-        const json = await resp.json();
-
-        if (json.err_msg) {
-          showToast(json.err_msg, 'error');
-        } else {
-          showToast('Decision updated successfully', 'success');
-          closeUpdateDialog();
-          fetchList(state.page);
-        }
-      } catch (e) {
-        showToast('Request failed: ' + e.message, 'error');
-      } finally {
-        state.updateLoading = false;
-        els.confirmDialogBtn.disabled = false;
-      }
-    }
-
-    els.searchBtn.addEventListener('click', () => {
-      state.page = 1;
-      fetchList(1);
-    });
-
-    els.resetBtn.addEventListener('click', resetFilter);
-
-    els.pageSizeSelect.addEventListener('change', () => {
-      state.page = 1;
-      fetchList(1);
-    });
-
-    els.prevBtn.addEventListener('click', () => {
-      if (state.page > 1) fetchList(state.page - 1);
-    });
-
-    els.nextBtn.addEventListener('click', () => {
-      const totalPages = Math.max(1, Math.ceil(state.total / state.pageSize));
-      if (state.page < totalPages) fetchList(state.page + 1);
-    });
-
-    els.cancelDialogBtn.addEventListener('click', closeUpdateDialog);
-    els.confirmDialogBtn.addEventListener('click', submitUpdateDecision);
-
-    els.dialogMask.addEventListener('click', (e) => {
-      if (e.target === els.dialogMask) {
-        closeUpdateDialog();
-      }
-    });
-
-    els.tableBody.addEventListener('click', (e) => {
-      const btn = e.target.closest('button[data-action]');
-      if (!btn) return;
-
-      const action = btn.dataset.action;
-      const id = Number(btn.dataset.id);
-      const row = state.tableData.find(item => Number(item.id) === id);
-      if (!row) return;
-
-      if (action === 'detail') {
-        viewDetail(row);
-      } else if (action === 'update') {
-        openUpdateDialog(row);
-      }
-    });
-
-    renderDecisionOptions();
-    renderPagination();
-    fetchList(1);
-  </script>
+  <script src="/admin-ms/v1/merchant/risk-user-reviews/risk_user_review_list.js?v=0.0.1"></script>
 </body>
 </html>
