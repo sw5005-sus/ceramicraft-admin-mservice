@@ -54,7 +54,7 @@ func GetRiskUserReviews(c *gin.Context) {
 // @Failure      500  {object}  data.BaseResponse{data=string}
 // @Router       /admin-ms/v1/merchant/risk-user-reviews/{review_id}/decision [put]
 func UpdateDecision(c *gin.Context) {
-	req := &data.UpdateDecisionRequest{}
+		req := &data.UpdateDecisionRequest{}
 	if err := c.ShouldBindJSON(req); err != nil {
 		c.JSON(http.StatusBadRequest, data.BaseResponse{ErrMsg: err.Error()})
 		return

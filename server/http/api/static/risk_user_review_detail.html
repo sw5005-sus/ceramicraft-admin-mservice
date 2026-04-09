@@ -4,22 +4,279 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Risk User Review - Detail</title>
-  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.13.6/dist/index.css" />
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 0;
       background: #f5f7fa;
       font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+      color: #303133;
     }
-    #app { padding: 24px; max-width: 900px; }
-    .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
-    .page-header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #303133; }
+
+    #app {
+      padding: 24px;
+      max-width: 900px;
+    }
+
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .page-header h2 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #ebeef5;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
     .not-found {
-      text-align: center; padding: 60px 20px; color: #909399;
+      text-align: center;
+      padding: 60px 20px;
+      color: #909399;
     }
-    .not-found p { margin: 12px 0 24px; font-size: 14px; }
-    .action-bar { margin-top: 24px; display: flex; gap: 8px; }
+
+    .not-found-icon {
+      font-size: 48px;
+      line-height: 1;
+      margin-bottom: 12px;
+    }
+
+    .not-found p {
+      margin: 12px 0 24px;
+      font-size: 14px;
+    }
+
+    .btn {
+      height: 34px;
+      padding: 0 14px;
+      border: 1px solid #dcdfe6;
+      background: #fff;
+      color: #606266;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: 0.2s;
+    }
+
+    .btn:hover {
+      border-color: #c6e2ff;
+      color: #409eff;
+      background: #ecf5ff;
+    }
+
+    .btn:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+    }
+
+    .btn-primary {
+      background: #409eff;
+      border-color: #409eff;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #66b1ff;
+      border-color: #66b1ff;
+      color: #fff;
+    }
+
+    .btn-warning {
+      background: #e6a23c;
+      border-color: #e6a23c;
+      color: #fff;
+    }
+
+    .btn-warning:hover {
+      background: #ebb563;
+      border-color: #ebb563;
+      color: #fff;
+    }
+
+    .action-bar {
+      margin-top: 24px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .desc-title {
+      margin: 0 0 16px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .desc-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: #fff;
+      border: 1px solid #ebeef5;
+    }
+
+    .desc-table th,
+    .desc-table td {
+      border: 1px solid #ebeef5;
+      padding: 12px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+      word-break: break-word;
+    }
+
+    .desc-table th {
+      width: 180px;
+      background: #fafafa;
+      color: #606266;
+      font-weight: 600;
+    }
+
+    .pre-wrap {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .break-all {
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .tag {
+      display: inline-block;
+      height: 24px;
+      line-height: 22px;
+      padding: 0 8px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .tag-info {
+      color: #909399;
+      background: #f4f4f5;
+      border-color: #e9e9eb;
+    }
+
+    .tag-warning {
+      color: #e6a23c;
+      background: #fdf6ec;
+      border-color: #faecd8;
+    }
+
+    .tag-danger {
+      color: #f56c6c;
+      background: #fef0f0;
+      border-color: #fde2e2;
+    }
+
+    .tag-success {
+      color: #67c23a;
+      background: #f0f9eb;
+      border-color: #e1f3d8;
+    }
+
+    .loading-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.55);
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #409eff;
+    }
+
+    .loading-mask.show {
+      display: flex;
+    }
+
+    .dialog-mask {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .dialog-mask.show {
+      display: flex;
+    }
+
+    .dialog {
+      width: 420px;
+      max-width: 100%;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    }
+
+    .dialog-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid #ebeef5;
+      font-size: 16px;
+      font-weight: 600;
+      color: #303133;
+    }
+
+    .dialog-body {
+      padding: 16px 20px;
+    }
+
+    .mini-desc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+    }
+
+    .mini-desc-table th,
+    .mini-desc-table td {
+      border: 1px solid #ebeef5;
+      padding: 10px 12px;
+      text-align: left;
+      font-size: 14px;
+    }
+
+    .mini-desc-table th {
+      width: 120px;
+      background: #fafafa;
+      color: #606266;
+      font-weight: 600;
+    }
+
+    .form-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .form-row label {
+      width: 108px;
+      color: #606266;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
 
     .nice-select {
       width: 220px;
@@ -40,127 +297,290 @@
       background-repeat: no-repeat;
       background-position: right 8px center;
       background-size: 12px;
-      box-sizing: border-box;
     }
+
     .nice-select:hover {
       border-color: #c0c4cc;
     }
+
     .nice-select:focus {
       border-color: #409eff;
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+      box-shadow: 0 0 0 2px rgba(64,158,255,0.2);
+    }
+
+    .dialog-footer {
+      padding: 12px 20px 16px;
+      border-top: 1px solid #ebeef5;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .toast-wrap {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1200;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      min-width: 240px;
+      max-width: 360px;
+      padding: 12px 14px;
+      border-radius: 6px;
+      background: #fff;
+      border: 1px solid #ebeef5;
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+      font-size: 14px;
+    }
+
+    .toast-success {
+      border-color: #e1f3d8;
+      background: #f0f9eb;
+      color: #67c23a;
+    }
+
+    .toast-error {
+      border-color: #fde2e2;
+      background: #fef0f0;
+      color: #f56c6c;
+    }
+
+    .toast-warning {
+      border-color: #faecd8;
+      background: #fdf6ec;
+      color: #e6a23c;
+    }
+
+    @media (max-width: 768px) {
+      #app {
+        padding: 16px;
+      }
+
+      .page-header {
+        flex-wrap: wrap;
+      }
+
+      .desc-table,
+      .desc-table tbody,
+      .desc-table tr,
+      .desc-table th,
+      .desc-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .desc-table tr {
+        margin-bottom: 12px;
+        border: 1px solid #ebeef5;
+      }
+
+      .desc-table th {
+        border-bottom: none;
+      }
+
+      .desc-table td {
+        border-top: none;
+      }
     }
   </style>
 </head>
 <body>
   <div id="app">
     <div class="page-header">
-      <el-button :icon="ArrowLeft" @click="goBack">Back</el-button>
+      <button id="backBtnTop" class="btn">← Back</button>
       <h2>Risk User Review - Detail</h2>
     </div>
 
-    <div v-if="!record" class="not-found">
-      <el-icon size="48"><Warning /></el-icon>
+    <div id="notFoundCard" class="card not-found" style="display:none;">
+      <div class="not-found-icon">⚠</div>
       <p>Record data not available. Please navigate from the list page.</p>
-      <el-button type="primary" @click="goBack">Go to List</el-button>
+      <button id="goListBtn" class="btn btn-primary">Go to List</button>
     </div>
 
-    <el-card v-else>
-      <el-descriptions title="Review Information" :column="2" border>
-        <el-descriptions-item label="ID">{{ record.id }}</el-descriptions-item>
-        <el-descriptions-item label="User ID">{{ record.user_id }}</el-descriptions-item>
-        <el-descriptions-item label="Create Time">{{ formatTime(record.create_time) }}</el-descriptions-item>
-        <el-descriptions-item label="Decision">
-          <el-tag :type="decisionTagType(record.decision)" size="small">{{ decisionLabel(record.decision) }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="Decision Source" :span="2">{{ record.decision_source || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Risk Score">{{ record.risk_score }}</el-descriptions-item>
-        <el-descriptions-item label="Risk Level">{{ record.risk_level || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Rule Score">{{ record.rule_score }}</el-descriptions-item>
-        <el-descriptions-item label="Fraud Probability">{{ record.fraud_probability }}</el-descriptions-item>
-        <el-descriptions-item label="Confidence" :span="2">{{ record.confidence || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Analyst Summary" :span="2">
-          <span style="white-space:pre-wrap">{{ record.analyst_summary || '-' }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="Rules" :span="2">
-          <span style="white-space:pre-wrap;word-break:break-all">{{ record.rules || '-' }}</span>
-        </el-descriptions-item>
-      </el-descriptions>
+    <div id="detailCard" class="card" style="display:none;">
+      <h3 class="desc-title">Review Information</h3>
+
+      <table class="desc-table">
+        <tbody>
+          <tr>
+            <th>ID</th>
+            <td id="fieldId">-</td>
+            <th>User ID</th>
+            <td id="fieldUserId">-</td>
+          </tr>
+          <tr>
+            <th>Create Time</th>
+            <td id="fieldCreateTime">-</td>
+            <th>Decision</th>
+            <td id="fieldDecision">-</td>
+          </tr>
+          <tr>
+            <th>Decision Source</th>
+            <td id="fieldDecisionSource" colspan="3">-</td>
+          </tr>
+          <tr>
+            <th>Risk Score</th>
+            <td id="fieldRiskScore">-</td>
+            <th>Risk Level</th>
+            <td id="fieldRiskLevel">-</td>
+          </tr>
+          <tr>
+            <th>Rule Score</th>
+            <td id="fieldRuleScore">-</td>
+            <th>Fraud Probability</th>
+            <td id="fieldFraudProbability">-</td>
+          </tr>
+          <tr>
+            <th>Confidence</th>
+            <td id="fieldConfidence" colspan="3">-</td>
+          </tr>
+          <tr>
+            <th>Analyst Summary</th>
+            <td id="fieldAnalystSummary" colspan="3"><span class="pre-wrap">-</span></td>
+          </tr>
+          <tr>
+            <th>Rules</th>
+            <td id="fieldRules" colspan="3"><span class="break-all">-</span></td>
+          </tr>
+        </tbody>
+      </table>
 
       <div class="action-bar">
-        <el-button
-          type="warning"
-          v-if="record.decision === DECISION_MANUAL_REVIEW"
-          @click="openUpdateDialog"
-        >Update Decision</el-button>
-        <el-button @click="goBack">Back to List</el-button>
+        <button id="updateBtn" class="btn btn-warning" style="display:none;">Update Decision</button>
+        <button id="backBtnBottom" class="btn">Back to List</button>
       </div>
-    </el-card>
-
-    <el-dialog v-model="updateDialogVisible" title="Update Decision" width="420px" :close-on-click-modal="false">
-      <el-descriptions :column="1" border size="small" style="margin-bottom:16px">
-        <el-descriptions-item label="Review ID">{{ record && record.id }}</el-descriptions-item>
-        <el-descriptions-item label="User ID">{{ record && record.user_id }}</el-descriptions-item>
-        <el-descriptions-item label="Current Decision">
-          <el-tag v-if="record" :type="decisionTagType(record.decision)" size="small">
-            {{ decisionLabel(record.decision) }}
-          </el-tag>
-        </el-descriptions-item>
-      </el-descriptions>
-
-      <el-form label-width="120px">
-        <el-form-item label="New Decision" required>
-          <select v-model.number="newDecision" class="nice-select">
-            <option disabled value="">Select resolved decision</option>
-            <option :value="RESOLVED_BLOCK">Resolved - Block</option>
-            <option :value="RESOLVED_WHITELIST">Resolved - Whitelist</option>
-            <option :value="RESOLVED_WATCHLIST">Resolved - Watchlist</option>
-          </select>
-        </el-form-item>
-      </el-form>
-
-      <template #footer>
-        <el-button @click="updateDialogVisible = false">Cancel</el-button>
-        <el-button type="primary" :loading="updateLoading" @click="submitUpdateDecision">Confirm</el-button>
-      </template>
-    </el-dialog>
+    </div>
   </div>
 
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
-  <script>
-    const { createApp, ref, onMounted } = Vue;
+  <div id="loadingMask" class="loading-mask">Loading...</div>
 
+  <div id="dialogMask" class="dialog-mask">
+    <div class="dialog">
+      <div class="dialog-header">Update Decision</div>
+      <div class="dialog-body">
+        <table class="mini-desc-table">
+          <tr>
+            <th>Review ID</th>
+            <td id="dialogReviewId">-</td>
+          </tr>
+          <tr>
+            <th>User ID</th>
+            <td id="dialogUserId">-</td>
+          </tr>
+          <tr>
+            <th>Current Decision</th>
+            <td id="dialogCurrentDecision">-</td>
+          </tr>
+        </table>
+
+        <div class="form-row">
+          <label for="newDecisionSelect">New Decision</label>
+          <select id="newDecisionSelect" class="nice-select">
+            <option value="">Select resolved decision</option>
+            <option value="10">Resolved - Block</option>
+            <option value="11">Resolved - Whitelist</option>
+            <option value="12">Resolved - Watchlist</option>
+          </select>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button id="cancelDialogBtn" class="btn">Cancel</button>
+        <button id="confirmDialogBtn" class="btn btn-primary">Confirm</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastWrap" class="toast-wrap"></div>
+
+  <script>
     const DECISION_MANUAL_REVIEW = 1;
-    const DECISION_BLOCK         = 2;
-    const DECISION_WATCHLIST     = 3;
-    const DECISION_ALLOW         = 4;
-    const DECISION_UNRECOGNIZED  = 0;
-    const RESOLVED_BLOCK         = 10;
-    const RESOLVED_WHITELIST     = 11;
-    const RESOLVED_WATCHLIST     = 12;
+    const DECISION_BLOCK = 2;
+    const DECISION_WATCHLIST = 3;
+    const DECISION_ALLOW = 4;
+    const DECISION_UNRECOGNIZED = 0;
+    const RESOLVED_BLOCK = 10;
+    const RESOLVED_WHITELIST = 11;
+    const RESOLVED_WATCHLIST = 12;
 
     const decisionMap = {
-      [DECISION_UNRECOGNIZED]:  { label: 'Unrecognized',         type: 'info' },
-      [DECISION_MANUAL_REVIEW]: { label: 'Manual Review',        type: 'warning' },
-      [DECISION_BLOCK]:         { label: 'Block',                type: 'danger' },
-      [DECISION_WATCHLIST]:     { label: 'Watchlist',            type: '' },
-      [DECISION_ALLOW]:         { label: 'Allow',                type: 'success' },
-      [RESOLVED_BLOCK]:         { label: 'Resolved - Block',     type: 'danger' },
-      [RESOLVED_WHITELIST]:     { label: 'Resolved - Whitelist', type: 'success' },
-      [RESOLVED_WATCHLIST]:     { label: 'Resolved - Watchlist', type: 'info' },
+      [DECISION_UNRECOGNIZED]:  { label: 'Unrecognized',         tagClass: 'tag-info' },
+      [DECISION_MANUAL_REVIEW]: { label: 'Manual Review',        tagClass: 'tag-warning' },
+      [DECISION_BLOCK]:         { label: 'Block',                tagClass: 'tag-danger' },
+      [DECISION_WATCHLIST]:     { label: 'Watchlist',            tagClass: 'tag-info' },
+      [DECISION_ALLOW]:         { label: 'Allow',                tagClass: 'tag-success' },
+      [RESOLVED_BLOCK]:         { label: 'Resolved - Block',     tagClass: 'tag-danger' },
+      [RESOLVED_WHITELIST]:     { label: 'Resolved - Whitelist', tagClass: 'tag-success' },
+      [RESOLVED_WATCHLIST]:     { label: 'Resolved - Watchlist', tagClass: 'tag-info' },
     };
 
-    function decisionLabel(val) {
-      return (decisionMap[val] && decisionMap[val].label) ? decisionMap[val].label : String(val);
-    }
+    const state = {
+      record: null,
+      updateLoading: false,
+    };
 
-    function decisionTagType(val) {
-      return (decisionMap[val] && decisionMap[val].type !== undefined) ? decisionMap[val].type : 'info';
+    const els = {
+      notFoundCard: document.getElementById('notFoundCard'),
+      detailCard: document.getElementById('detailCard'),
+      backBtnTop: document.getElementById('backBtnTop'),
+      backBtnBottom: document.getElementById('backBtnBottom'),
+      goListBtn: document.getElementById('goListBtn'),
+      updateBtn: document.getElementById('updateBtn'),
+
+      fieldId: document.getElementById('fieldId'),
+      fieldUserId: document.getElementById('fieldUserId'),
+      fieldCreateTime: document.getElementById('fieldCreateTime'),
+      fieldDecision: document.getElementById('fieldDecision'),
+      fieldDecisionSource: document.getElementById('fieldDecisionSource'),
+      fieldRiskScore: document.getElementById('fieldRiskScore'),
+      fieldRiskLevel: document.getElementById('fieldRiskLevel'),
+      fieldRuleScore: document.getElementById('fieldRuleScore'),
+      fieldFraudProbability: document.getElementById('fieldFraudProbability'),
+      fieldConfidence: document.getElementById('fieldConfidence'),
+      fieldAnalystSummary: document.getElementById('fieldAnalystSummary'),
+      fieldRules: document.getElementById('fieldRules'),
+
+      loadingMask: document.getElementById('loadingMask'),
+      dialogMask: document.getElementById('dialogMask'),
+      dialogReviewId: document.getElementById('dialogReviewId'),
+      dialogUserId: document.getElementById('dialogUserId'),
+      dialogCurrentDecision: document.getElementById('dialogCurrentDecision'),
+      newDecisionSelect: document.getElementById('newDecisionSelect'),
+      cancelDialogBtn: document.getElementById('cancelDialogBtn'),
+      confirmDialogBtn: document.getElementById('confirmDialogBtn'),
+
+      toastWrap: document.getElementById('toastWrap'),
+    };
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
     }
 
     function formatTime(ts) {
-      if (ts === null || ts === undefined) return '-';
-      return new Date(ts * 1000).toLocaleString();
+      if (ts === null || ts === undefined || ts === '') return '-';
+      return new Date(Number(ts) * 1000).toLocaleString();
+    }
+
+    function decisionLabel(val) {
+      const item = decisionMap[Number(val)];
+      return item ? item.label : String(val);
+    }
+
+    function decisionTagClass(val) {
+      const item = decisionMap[Number(val)];
+      return item ? item.tagClass : 'tag-info';
+    }
+
+    function renderDecisionTag(val) {
+      return '<span class="tag ' + decisionTagClass(val) + '">' + escapeHtml(decisionLabel(val)) + '</span>';
     }
 
     function getReviewIdFromPath() {
@@ -168,82 +588,165 @@
       return parts[parts.length - 1];
     }
 
-    createApp({
-      setup() {
-        const record              = ref(null);
-        const updateDialogVisible = ref(false);
-        const newDecision         = ref('');
-        const updateLoading       = ref(false);
+    function setLoading(flag) {
+      els.loadingMask.classList.toggle('show', flag);
+    }
 
-        onMounted(() => {
-          const id = getReviewIdFromPath();
-          const stored = sessionStorage.getItem('rur_detail_' + id);
-          if (stored) {
-            try { record.value = JSON.parse(stored); } catch (e) {}
-          }
-        });
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = 'toast toast-' + type;
+      toast.textContent = message;
+      els.toastWrap.appendChild(toast);
+      setTimeout(() => toast.remove(), 2500);
+    }
 
-        function goBack() {
-          if (document.referrer && document.referrer.includes('/risk-user-reviews/page')) {
-            history.back();
-          } else {
-            window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page';
-          }
-        }
+    function showNotFound() {
+      els.notFoundCard.style.display = 'block';
+      els.detailCard.style.display = 'none';
+    }
 
-        function openUpdateDialog() {
-          newDecision.value = '';
-          updateDialogVisible.value = true;
-        }
+    function showDetail() {
+      els.notFoundCard.style.display = 'none';
+      els.detailCard.style.display = 'block';
+    }
 
-        async function submitUpdateDecision() {
-          if (newDecision.value === '' || newDecision.value === null || newDecision.value === undefined) {
-            ElementPlus.ElMessage.warning('Please select a resolved decision');
-            return;
-          }
-          updateLoading.value = true;
-          try {
-            const body = {
-              id: record.value.id,
-              user_id: record.value.user_id,
-              decision: newDecision.value,
-            };
-            const resp = await fetch(
-              '/admin-ms/v1/merchant/risk-user-reviews/' + record.value.id + '/decision',
-              {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body),
-              }
-            );
-            const json = await resp.json();
-            if (json.err_msg) {
-              ElementPlus.ElMessage.error(json.err_msg);
-            } else {
-              ElementPlus.ElMessage.success('Decision updated successfully');
-              updateDialogVisible.value = false;
-              record.value = Object.assign({}, record.value, { decision: newDecision.value });
-              sessionStorage.setItem('rur_detail_' + record.value.id, JSON.stringify(record.value));
-            }
-          } catch (e) {
-            ElementPlus.ElMessage.error('Request failed: ' + e.message);
-          } finally {
-            updateLoading.value = false;
-          }
-        }
+    function renderRecord() {
+      const record = state.record;
+      if (!record) {
+        showNotFound();
+        return;
+      }
 
-        return {
-          DECISION_MANUAL_REVIEW, RESOLVED_BLOCK, RESOLVED_WHITELIST, RESOLVED_WATCHLIST,
-          decisionLabel, decisionTagType, formatTime,
-          record, updateDialogVisible, newDecision, updateLoading,
-          goBack, openUpdateDialog, submitUpdateDecision,
-          ArrowLeft: ElementPlus.icons ? ElementPlus.icons.ArrowLeft : null,
-          Warning:   ElementPlus.icons ? ElementPlus.icons.Warning   : null,
+      els.fieldId.textContent = record.id ?? '-';
+      els.fieldUserId.textContent = record.user_id ?? '-';
+      els.fieldCreateTime.textContent = formatTime(record.create_time);
+      els.fieldDecision.innerHTML = renderDecisionTag(record.decision);
+      els.fieldDecisionSource.textContent = record.decision_source || '-';
+      els.fieldRiskScore.textContent = record.risk_score ?? '-';
+      els.fieldRiskLevel.textContent = record.risk_level || '-';
+      els.fieldRuleScore.textContent = record.rule_score ?? '-';
+      els.fieldFraudProbability.textContent = record.fraud_probability ?? '-';
+      els.fieldConfidence.textContent = record.confidence || '-';
+      els.fieldAnalystSummary.innerHTML = '<span class="pre-wrap">' + escapeHtml(record.analyst_summary || '-') + '</span>';
+      els.fieldRules.innerHTML = '<span class="break-all">' + escapeHtml(record.rules || '-') + '</span>';
+
+      if (Number(record.decision) === DECISION_MANUAL_REVIEW) {
+        els.updateBtn.style.display = 'inline-block';
+      } else {
+        els.updateBtn.style.display = 'none';
+      }
+
+      showDetail();
+    }
+
+    function goBack() {
+      if (document.referrer && document.referrer.includes('/risk-user-reviews/page')) {
+        history.back();
+      } else {
+        window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page';
+      }
+    }
+
+    function openUpdateDialog() {
+      if (!state.record) return;
+
+      els.dialogReviewId.textContent = state.record.id ?? '-';
+      els.dialogUserId.textContent = state.record.user_id ?? '-';
+      els.dialogCurrentDecision.innerHTML = renderDecisionTag(state.record.decision);
+      els.newDecisionSelect.value = '';
+      els.dialogMask.classList.add('show');
+    }
+
+    function closeUpdateDialog() {
+      els.newDecisionSelect.value = '';
+      els.dialogMask.classList.remove('show');
+    }
+
+    async function submitUpdateDecision() {
+      const newDecision = els.newDecisionSelect.value;
+
+      if (!newDecision) {
+        showToast('Please select a resolved decision', 'warning');
+        return;
+      }
+
+      if (!state.record) return;
+
+      state.updateLoading = true;
+      els.confirmDialogBtn.disabled = true;
+
+      try {
+        const body = {
+          id: state.record.id,
+          user_id: state.record.user_id,
+          decision: Number(newDecision),
         };
-      },
-    }).use(ElementPlus).mount('#app');
+
+        const resp = await fetch(
+          '/admin-ms/v1/merchant/risk-user-reviews/' + state.record.id + '/decision',
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(body),
+          }
+        );
+
+        const json = await resp.json();
+
+        if (json.err_msg) {
+          showToast(json.err_msg, 'error');
+        } else {
+          state.record = Object.assign({}, state.record, {
+            decision: Number(newDecision),
+          });
+
+          sessionStorage.setItem('rur_detail_' + state.record.id, JSON.stringify(state.record));
+          renderRecord();
+          closeUpdateDialog();
+          showToast('Decision updated successfully', 'success');
+        }
+      } catch (e) {
+        showToast('Request failed: ' + e.message, 'error');
+      } finally {
+        state.updateLoading = false;
+        els.confirmDialogBtn.disabled = false;
+      }
+    }
+
+    function init() {
+      setLoading(true);
+      try {
+        const id = getReviewIdFromPath();
+        const stored = sessionStorage.getItem('rur_detail_' + id);
+        if (stored) {
+          try {
+            state.record = JSON.parse(stored);
+          } catch (e) {
+            state.record = null;
+          }
+        }
+        renderRecord();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    els.backBtnTop.addEventListener('click', goBack);
+    els.backBtnBottom.addEventListener('click', goBack);
+    els.goListBtn.addEventListener('click', goBack);
+    els.updateBtn.addEventListener('click', openUpdateDialog);
+    els.cancelDialogBtn.addEventListener('click', closeUpdateDialog);
+    els.confirmDialogBtn.addEventListener('click', submitUpdateDecision);
+
+    els.dialogMask.addEventListener('click', (e) => {
+      if (e.target === els.dialogMask) {
+        closeUpdateDialog();
+      }
+    });
+
+    init();
   </script>
 </body>
 </html>
