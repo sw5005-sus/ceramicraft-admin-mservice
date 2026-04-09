@@ -62,7 +62,7 @@ func UpdateDecision(c *gin.Context) {
 	reviewId := c.Param("review_id")
 	if reviewId != fmt.Sprintf("%d", req.ID) {
 		c.JSON(http.StatusBadRequest, data.BaseResponse{ErrMsg: "review_id in path does not match id in body"})
-		return	
+		return
 	}
 	userId, exist := c.Get("userID")
 	if !exist {
