@@ -39,9 +39,9 @@ type GrpcConfig struct {
 type MySQL struct {
 	Host     string `mapstructure:"host"`
 	Port     string `mapstructure:"port"`
-	UserName string `mapstructure:"username"`
+	UserName string `mapstructure:"userName"`
 	Password string `mapstructure:"password"`
-	Database string `mapstructure:"database"`
+	DbName   string `mapstructure:"dbName"`
 }
 
 type RedisConfig struct {
