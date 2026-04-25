@@ -15,8 +15,8 @@ log:
 mysql:
   host: "mysql-container"
   port: "3306"
-  username: "root"
-  database: "admin_db"
+  userName: "root"
+  dbName: "admin_db"
 
 audit_grpc:
   host: localhost

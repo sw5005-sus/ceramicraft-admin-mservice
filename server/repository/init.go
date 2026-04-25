@@ -26,7 +26,7 @@ func Init() {
 		config.Config.MySQLConfig.Password,
 		config.Config.MySQLConfig.Host,
 		config.Config.MySQLConfig.Port,
-		config.Config.MySQLConfig.Database,
+		config.Config.MySQLConfig.DbName,
 	)
 	DB, err = gorm.Open(mysql.Open(dsn),
 		&gorm.Config{
