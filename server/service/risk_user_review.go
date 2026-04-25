@@ -114,6 +114,7 @@ func toRiskUserReviewDTO(m *model.RiskUserReview) *httpdata.RiskUserReview {
 		RiskLevel:        m.RiskLevel,
 		RuleScore:        m.RuleScore,
 		FraudProbability: m.FraudProbability,
-		Rules:            m.Rules,
+		Rules:                 m.Rules,
+		MlModelTopContributor: m.MlModelTopContributor,
 	}
 }

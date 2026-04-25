@@ -26,6 +26,7 @@ type RiskUserReview struct {
 	RuleScore        float32 `json:"rule_score"`
 	FraudProbability float32 `json:"fraud_probability"`
 	Rules            string  `json:"rules"`
+	MlModelTopContributor string `json:"ml_model_top_contributor"`
 }
 
 // RiskUserReviewListRequest defines query parameters for the page query API.

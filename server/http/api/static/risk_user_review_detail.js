@@ -1,4 +1,4 @@
-// 常量定义，保持与 list.js 一致
+// ---- Constants ----
 const DECISION_MANUAL_REVIEW = 1;
 const decisionMap = {
   0:  { label: 'Unrecognized',         tagClass: 'tag-info' },
@@ -11,30 +11,41 @@ const decisionMap = {
   12: { label: 'Resolved - Watchlist', tagClass: 'tag-info' },
 };
 
-const state = {
-  record: null,
-  updateLoading: false,
+const featureNameMap = {
+  order_count_last_1h:    'Orders in Last 1 Hour',
+  order_count_last_24h:   'Orders in Last 24 Hours',
+  unique_ip_count:        'Unique IP Count',
+  account_age_days:       'Account Age',
+  avg_order_amount_today: 'Avg Order Amount Today',
+  receive_address_count:  'Receive Address Count',
 };
 
-// 获取所有 DOM 元素
+const state = { record: null, updateLoading: false };
+
+// ---- DOM element registry ----
 const els = {
   get: (id) => document.getElementById(id),
   init() {
-    this.notFoundCard = this.get('notFoundCard');
-    this.detailCard = this.get('detailCard');
-    this.backBtnTop = this.get('backBtnTop');
-    this.backBtnBottom = this.get('backBtnBottom');
-    this.updateBtn = this.get('updateBtn');
-    this.confirmDialogBtn = this.get('confirmDialogBtn');
-    this.cancelDialogBtn = this.get('cancelDialogBtn');
-    this.dialogMask = this.get('dialogMask');
-    this.newDecisionSelect = this.get('newDecisionSelect');
-    this.toastWrap = this.get('toastWrap');
-    this.loadingMask = this.get('loadingMask');
+    this.notFoundCard       = this.get('notFoundCard');
+    this.sectionSummary     = this.get('sectionSummary');
+    this.sectionRisk        = this.get('sectionRisk');
+    this.sectionAI          = this.get('sectionAI');
+    this.sectionRules       = this.get('sectionRules');
+    this.sectionRaw         = this.get('sectionRaw');
+    this.actionBar          = this.get('actionBar');
+    this.backBtnTop         = this.get('backBtnTop');
+    this.backBtnBottom      = this.get('backBtnBottom');
+    this.updateBtn          = this.get('updateBtn');
+    this.confirmDialogBtn   = this.get('confirmDialogBtn');
+    this.cancelDialogBtn    = this.get('cancelDialogBtn');
+    this.dialogMask         = this.get('dialogMask');
+    this.newDecisionSelect  = this.get('newDecisionSelect');
+    this.toastWrap          = this.get('toastWrap');
+    this.loadingMask        = this.get('loadingMask');
   }
 };
 
-// 工具函数
+// ---- Utility functions ----
 function showToast(message, type = 'success') {
   const toast = document.createElement('div');
   toast.className = `toast toast-${type}`;
@@ -47,35 +58,170 @@ function formatTime(ts) {
   return ts ? new Date(Number(ts) * 1000).toLocaleString() : '-';
 }
 
+function formatScore(value) {
+  if (value === null || value === undefined || value === '') return 'N/A';
+  const n = parseFloat(value);
+  return isNaN(n) ? 'N/A' : n.toFixed(2);
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function formatSnakeCaseLabel(value) {
+  if (!value) return String(value);
+  if (featureNameMap[value]) return featureNameMap[value];
+  return value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function safeParseJson(value) {
+  if (value === null || value === undefined) return null;
+  if (typeof value === 'object') return value;
+  if (typeof value === 'string') {
+    try { return JSON.parse(value); } catch (e) { return null; }
+  }
+  return null;
+}
+
+function normalizeRulesHit(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  const parsed = safeParseJson(value);
+  if (Array.isArray(parsed)) return parsed;
+  if (typeof value === 'string') {
+    return value.split(',').map((s) => s.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+function normalizeTopContributors(value) {
+  if (!value) return null;
+  const parsed = safeParseJson(value);
+  if (!Array.isArray(parsed) || parsed.length === 0) return null;
+  const items = parsed.map((item) => {
+    const feature = item.feature || item.name || item.field || '';
+    const contribution =
+      item.contribution !== undefined ? item.contribution :
+      item.score       !== undefined ? item.score :
+      item.value       !== undefined ? item.value :
+      item.weight      !== undefined ? item.weight :
+      item.impact      !== undefined ? item.impact : null;
+    return { feature, contribution, raw: item };
+  });
+  items.sort((a, b) =>
+    Math.abs(parseFloat(b.contribution) || 0) - Math.abs(parseFloat(a.contribution) || 0)
+  );
+  return items;
+}
+
+function getRiskTagClass(riskLevel) {
+  const lvl = (riskLevel || '').toLowerCase();
+  if (lvl === 'low')                       return 'tag-risk-low';
+  if (lvl === 'medium' || lvl === 'med')   return 'tag-risk-med';
+  if (lvl === 'high')                      return 'tag-risk-high';
+  return 'tag-info';
+}
+
+// ---- Render helpers ----
+function renderDecisionTag(decision) {
+  const cfg = decisionMap[Number(decision)] || { label: String(decision), tagClass: 'tag-info' };
+  return `<span class="tag ${cfg.tagClass}">${escHtml(cfg.label)}</span>`;
+}
+
+function renderMlContributors(rawValue) {
+  const contributors = normalizeTopContributors(rawValue);
+  if (!contributors || contributors.length === 0) {
+    return '<span class="no-data">No ML contribution details available.</span>';
+  }
+  let rows = '';
+  for (const c of contributors) {
+    const val = parseFloat(c.contribution);
+    const isPos = !isNaN(val) && val > 0;
+    const isNeg = !isNaN(val) && val < 0;
+    const formatted = isNaN(val) ? 'N/A' : (isPos ? '+' : '') + val.toFixed(2);
+    const cls = isPos ? 'contrib-pos' : (isNeg ? 'contrib-neg' : '');
+    const ratio = c.raw && c.raw.ratio ? ` (${escHtml(String(c.raw.ratio))})` : '';
+    let dirText;
+    if (c.raw && c.raw.direction && typeof c.raw.direction === 'string') {
+      dirText = escHtml(c.raw.direction);
+    } else {
+      dirText = isPos ? 'Increases Risk' : (isNeg ? 'Reduces Risk' : '-');
+    }
+    rows += `<tr>
+      <td>${escHtml(formatSnakeCaseLabel(c.feature))}</td>
+      <td class="${cls}">${escHtml(formatted)}${ratio}</td>
+      <td>${dirText}</td>
+    </tr>`;
+  }
+  return `<table class="contrib-table">
+    <thead><tr><th>Feature</th><th>Contribution</th><th>Impact</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderRulesTags(rulesValue) {
+  const rules = normalizeRulesHit(rulesValue);
+  if (rules.length === 0) return '<span class="no-data">No rules triggered.</span>';
+  return '<div class="rules-tags">' +
+    rules.map((r) => `<span class="rule-tag">${escHtml(formatSnakeCaseLabel(r))}</span>`).join('') +
+    '</div>';
+}
+
+// ---- Main render ----
 function renderRecord() {
   const r = state.record;
   if (!r) {
     els.notFoundCard.style.display = 'block';
-    els.detailCard.style.display = 'none';
     return;
   }
 
-  els.get('fieldId').textContent = r.id || '-';
-  els.get('fieldUserId').textContent = r.user_id || '-';
+  // Section 1 – Review Summary
+  els.get('fieldId').textContent        = r.id != null ? r.id : 'N/A';
+  els.get('fieldUserId').textContent    = r.user_id != null ? r.user_id : 'N/A';
   els.get('fieldCreateTime').textContent = formatTime(r.create_time);
-  
-  const config = decisionMap[Number(r.decision)] || { label: r.decision, tagClass: 'tag-info' };
-  els.get('fieldDecision').innerHTML = `<span class="tag ${config.tagClass}">${config.label}</span>`;
-  
-  els.get('fieldDecisionSource').textContent = r.decision_source || '-';
-  els.get('fieldRiskScore').textContent = r.risk_score ?? '-';
-  els.get('fieldRiskLevel').textContent = r.risk_level || '-';
-  els.get('fieldRuleScore').textContent = r.rule_score ?? '-';
-  els.get('fieldFraudProbability').textContent = r.fraud_probability ?? '-';
-  els.get('fieldAnalystSummary').textContent = r.analyst_summary || '-';
-  els.get('fieldRules').textContent = r.rules || '-';
+  els.get('fieldDecision').innerHTML    = renderDecisionTag(r.decision);
+  els.get('fieldDecisionSource').textContent = r.decision_source || 'N/A';
+  els.sectionSummary.style.display = 'block';
 
+  // Section 2 – Risk Assessment
+  const riskLvl = r.risk_level || '';
+  els.get('fieldRiskLevel').innerHTML = riskLvl
+    ? `<span class="tag ${getRiskTagClass(riskLvl)}">${escHtml(riskLvl.charAt(0).toUpperCase() + riskLvl.slice(1))}</span>`
+    : '<span class="no-data">N/A</span>';
+  els.get('fieldConfidence').textContent       = r.confidence || 'N/A';
+  els.get('fieldRiskScore').textContent        = formatScore(r.risk_score);
+  els.get('fieldRuleScore').textContent        = formatScore(r.rule_score);
+  els.get('fieldFraudProbability').textContent = formatScore(r.fraud_probability);
+  els.sectionRisk.style.display = 'block';
+
+  // Section 3 – AI Explanation
+  els.get('fieldAnalystSummary').textContent = r.analyst_summary || 'N/A';
+  const mlRaw = r.ml_model_top_contributor
+    || r.ml_top_contributors
+    || r.top_contributors
+    || r.top_contributions
+    || null;
+  els.get('fieldMlContributors').innerHTML = renderMlContributors(mlRaw);
+  els.sectionAI.style.display = 'block';
+
+  // Section 4 – Triggered Rules
+  els.get('fieldRules').innerHTML = renderRulesTags(r.rules);
+  els.sectionRules.style.display = 'block';
+
+  // Section 5 – Raw Details
+  els.get('fieldRawJson').textContent = JSON.stringify(r, null, 2);
+  els.sectionRaw.style.display = 'block';
+
+  // Action bar
   els.updateBtn.style.display = Number(r.decision) === DECISION_MANUAL_REVIEW ? 'inline-block' : 'none';
-  els.detailCard.style.display = 'block';
-  els.notFoundCard.style.display = 'none';
+  els.actionBar.style.display = 'block';
 }
 
-// 交互逻辑
+// ---- Dialog ----
 async function submitUpdate() {
   const newVal = els.newDecisionSelect.value;
   if (!newVal) return showToast('Please select a decision', 'warning');
@@ -94,7 +240,6 @@ async function submitUpdate() {
         decision: Number(newVal)
       })
     });
-
     const json = await resp.json();
     if (json.err_msg) {
       showToast(json.err_msg, 'error');
@@ -116,25 +261,23 @@ async function submitUpdate() {
 
 function openDialog() { els.dialogMask.classList.add('show'); }
 function closeDialog() { els.dialogMask.classList.remove('show'); }
-function goBack() { window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page'; }
+function goBack()      { window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page'; }
 
-// 初始化入口
+// ---- Init ----
 document.addEventListener('DOMContentLoaded', () => {
   els.init();
 
-  // 绑定事件
-  els.backBtnTop.onclick = goBack;
-  els.backBtnBottom.onclick = goBack;
-  els.updateBtn.onclick = openDialog;
+  els.backBtnTop.onclick     = goBack;
+  els.backBtnBottom.onclick  = goBack;
+  els.updateBtn.onclick      = openDialog;
   els.cancelDialogBtn.onclick = closeDialog;
   els.confirmDialogBtn.onclick = submitUpdate;
-  els.dialogMask.onclick = (e) => { if(e.target === els.dialogMask) closeDialog(); };
+  els.dialogMask.onclick     = (e) => { if (e.target === els.dialogMask) closeDialog(); };
 
-  // 获取数据
   const id = window.location.pathname.split('/').pop();
   const stored = sessionStorage.getItem('rur_detail_' + id);
   if (stored) {
-    state.record = JSON.parse(stored);
+    try { state.record = JSON.parse(stored); } catch (e) {}
   }
   renderRecord();
 });

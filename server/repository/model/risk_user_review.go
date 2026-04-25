@@ -12,7 +12,8 @@ type RiskUserReview struct {
 	RiskLevel        string  `gorm:"type:varchar(63);default:''"`
 	RuleScore        float32 `gorm:"default:0.0"`
 	FraudProbability float32 `gorm:"default:0.0"`
-	Rules            string  `gorm:"type:text"`
+	Rules                 string  `gorm:"type:text"`
+	MlModelTopContributor string  `gorm:"type:text;column:ml_top_contributor"`
 }
 
 // TableName sets the insert table name for this struct type

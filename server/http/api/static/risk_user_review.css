@@ -422,3 +422,165 @@
     background: #fdf6ec;
     color: #e6a23c;
   }
+/* ---- Detail page sections ---- */
+.section-card { max-width: 920px; }
+
+.section-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #303133;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #ebeef5;
+}
+
+.subsection-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #909399;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+}
+
+.action-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  max-width: 920px;
+}
+
+/* ---- Risk level badge variants ---- */
+.tag-risk-low {
+  color: #67c23a;
+  background: #f0f9eb;
+  border-color: #e1f3d8;
+}
+
+.tag-risk-med {
+  color: #e6a23c;
+  background: #fdf6ec;
+  border-color: #faecd8;
+}
+
+.tag-risk-high {
+  color: #f56c6c;
+  background: #fef0f0;
+  border-color: #fde2e2;
+}
+
+/* ---- Metric cards ---- */
+.metric-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.metric-card {
+  flex: 1;
+  min-width: 120px;
+  padding: 14px 18px;
+  border: 1px solid #ebeef5;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.metric-label {
+  font-size: 11px;
+  color: #909399;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+}
+
+.metric-value {
+  font-size: 22px;
+  font-weight: 600;
+  color: #303133;
+}
+
+/* ---- Analyst summary ---- */
+.analyst-text {
+  white-space: pre-wrap;
+  line-height: 1.6;
+  color: #606266;
+  font-size: 14px;
+}
+
+/* ---- ML contributors table ---- */
+.contrib-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.contrib-table th,
+.contrib-table td {
+  padding: 8px 12px;
+  text-align: left;
+  border: 1px solid #ebeef5;
+  font-size: 13px;
+}
+
+.contrib-table th {
+  background: #f5f7fa;
+  color: #909399;
+  font-weight: 600;
+}
+
+.contrib-table td { color: #606266; }
+
+.contrib-table tbody tr:nth-child(even) td { background: #fafafa; }
+
+.contrib-pos { color: #f56c6c; font-weight: 600; }
+.contrib-neg { color: #67c23a; font-weight: 600; }
+
+/* ---- Rules tags ---- */
+.rules-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.rule-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: #ecf5ff;
+  color: #409eff;
+  border: 1px solid #b3d8ff;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+/* ---- No data placeholder ---- */
+.no-data { color: #909399; font-size: 13px; }
+
+/* ---- Raw JSON collapsible ---- */
+.raw-details > summary {
+  cursor: pointer;
+  color: #409eff;
+  font-size: 13px;
+  padding: 4px 0;
+  user-select: none;
+  list-style: none;
+}
+
+.raw-details > summary::-webkit-details-marker { display: none; }
+.raw-details > summary::before { content: '▶  '; font-size: 10px; }
+.raw-details[open] > summary::before { content: '▼  '; }
+
+.raw-json {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 4px;
+  background: #1e1e1e;
+  color: #d4d4d4;
+  font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre;
+  overflow-x: auto;
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #3c3c3c;
+}

@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Risk User Review - Detail</title>
-  <link rel="stylesheet" href="/admin-ms/v1/merchant/risk-user-reviews/risk_user_review.css?v=0.0.1" />
+  <link rel="stylesheet" href="/admin-ms/v1/merchant/risk-user-reviews/risk_user_review.css?v=0.0.2" />
 </head>
 <body>
   <div id="app">
@@ -16,20 +17,66 @@
       <p>Data not found. Please return to list.</p>
     </div>
 
-    <div id="detailCard" class="card" style="display:none;">
+    <!-- Section 1: Review Summary -->
+    <div id="sectionSummary" class="card section-card" style="display:none;">
+      <div class="section-title">Review Summary</div>
       <table class="desc-table">
         <tr><th>ID</th><td id="fieldId"></td><th>User ID</th><td id="fieldUserId"></td></tr>
-        <tr><th>Create Time</th><td id="fieldCreateTime"></td><th>Decision</th><td id="fieldDecision"></td></tr>
-        <tr><th>Risk Score</th><td id="fieldRiskScore"></td><th>Risk Level</th><td id="fieldRiskLevel"></td></tr>
-        <tr><th>Rule Score</th><td id="fieldRuleScore"></td><th>Fraud Prob.</th><td id="fieldFraudProbability"></td></tr>
-        <tr><th>Decision Source</th><td id="fieldDecisionSource" colspan="3"></td></tr>
-        <tr><th>Analyst Summary</th><td id="fieldAnalystSummary" colspan="3"></td></tr>
-        <tr><th>Rules Hit</th><td id="fieldRules" colspan="3"></td></tr>
+        <tr><th>Create Time</th><td id="fieldCreateTime" colspan="3"></td></tr>
+        <tr><th>Decision</th><td id="fieldDecision"></td><th>Decision Source</th><td id="fieldDecisionSource"></td></tr>
       </table>
-      <div class="action-bar">
-        <button id="updateBtn" class="btn btn-warning" style="display:none;">Update Decision</button>
-        <button id="backBtnBottom" class="btn">Return to List</button>
+    </div>
+
+    <!-- Section 2: Risk Assessment -->
+    <div id="sectionRisk" class="card section-card" style="display:none;">
+      <div class="section-title">Risk Assessment</div>
+      <table class="desc-table" style="margin-bottom:12px;">
+        <tr><th>Risk Level</th><td id="fieldRiskLevel"></td><th>Confidence</th><td id="fieldConfidence"></td></tr>
+      </table>
+      <div class="metric-row">
+        <div class="metric-card">
+          <div class="metric-label">Risk Score</div>
+          <div class="metric-value" id="fieldRiskScore">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Rule Score</div>
+          <div class="metric-value" id="fieldRuleScore">-</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-label">Fraud Probability</div>
+          <div class="metric-value" id="fieldFraudProbability">-</div>
+        </div>
       </div>
+    </div>
+
+    <!-- Section 3: AI Explanation -->
+    <div id="sectionAI" class="card section-card" style="display:none;">
+      <div class="section-title">AI Explanation</div>
+      <div class="subsection-label">Analyst Summary</div>
+      <div id="fieldAnalystSummary" class="analyst-text">-</div>
+
+      <div class="subsection-label" style="margin-top:16px;">ML Model Top Contributors</div>
+      <div id="fieldMlContributors"></div>
+    </div>
+
+    <!-- Section 4: Triggered Rules -->
+    <div id="sectionRules" class="card section-card" style="display:none;">
+      <div class="section-title">Triggered Rules</div>
+      <div id="fieldRules"></div>
+    </div>
+
+    <!-- Section 5: Raw Details -->
+    <div id="sectionRaw" class="card section-card" style="display:none;">
+      <div class="section-title">Raw Details</div>
+      <details class="raw-details">
+        <summary>View Raw Details</summary>
+        <pre id="fieldRawJson" class="raw-json"></pre>
+      </details>
+    </div>
+
+    <div id="actionBar" class="action-bar" style="display:none;">
+      <button id="updateBtn" class="btn btn-warning" style="display:none;">Update Decision</button>
+      <button id="backBtnBottom" class="btn">Return to List</button>
     </div>
   </div>
 
@@ -54,6 +101,6 @@
   <div id="loadingMask" class="loading-mask">Loading...</div>
   <div id="toastWrap" class="toast-wrap"></div>
 
-  <script src="/admin-ms/v1/merchant/risk-user-reviews/risk_user_review_detail.js?v=0.0.1"></script>
+  <script src="/admin-ms/v1/merchant/risk-user-reviews/risk_user_review_detail.js?v=0.0.2"></script>
 </body>
 </html>
