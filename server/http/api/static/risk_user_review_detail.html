@@ -4,246 +4,633 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Risk User Review - Detail</title>
-  <link rel="stylesheet" href="https://unpkg.com/element-plus@2.13.6/dist/index.css" />
   <style>
+    /* ---- Base ---- */
+    *, *::before, *::after { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       background: #f5f7fa;
       font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+      font-size: 14px; color: #303133;
     }
-    #app { padding: 24px; max-width: 900px; }
+    #app { padding: 24px; max-width: 960px; }
+
+    /* ---- Page header ---- */
     .page-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
     .page-header h2 { margin: 0; font-size: 20px; font-weight: 600; color: #303133; }
-    .not-found {
-      text-align: center; padding: 60px 20px; color: #909399;
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 7px 14px; border: 1px solid #dcdfe6; border-radius: 4px;
+      background: #fff; color: #606266; font-size: 13px;
+      cursor: pointer; text-decoration: none; line-height: 1;
     }
-    .not-found p { margin: 12px 0 24px; font-size: 14px; }
-    .action-bar { margin-top: 24px; display: flex; gap: 8px; }
+    .btn-back:hover { border-color: #c0c4cc; color: #303133; }
 
+    /* ---- Not found ---- */
+    .not-found { text-align: center; padding: 60px 20px; color: #909399; }
+    .not-found p { margin: 12px 0 24px; font-size: 14px; }
+
+    /* ---- Section card ---- */
+    .section {
+      background: #fff; border: 1px solid #ebeef5; border-radius: 6px;
+      margin-bottom: 20px; overflow: hidden;
+    }
+    .section-header {
+      padding: 12px 20px; background: #fafafa;
+      border-bottom: 1px solid #ebeef5;
+      font-size: 15px; font-weight: 600; color: #303133;
+    }
+    .section-body { padding: 20px; }
+
+    /* ---- Key/value grid ---- */
+    .kv-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px 24px; }
+    .kv-item { display: flex; flex-direction: column; gap: 4px; }
+    .kv-item.full { grid-column: span 2; }
+    .kv-label {
+      font-size: 11px; color: #909399; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.4px;
+    }
+    .kv-value { font-size: 14px; color: #303133; }
+
+    /* ---- Badges ---- */
+    .badge {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 12px; font-weight: 500; white-space: nowrap;
+    }
+    .badge-info    { background: #ecf5ff; color: #409eff; border: 1px solid #b3d8ff; }
+    .badge-warning { background: #fdf6ec; color: #e6a23c; border: 1px solid #f5dab1; }
+    .badge-danger  { background: #fef0f0; color: #f56c6c; border: 1px solid #fbc4c4; }
+    .badge-success { background: #f0f9eb; color: #67c23a; border: 1px solid #c2e7b0; }
+    .badge-default { background: #f4f4f5; color: #909399; border: 1px solid #d3d4d6; }
+
+    /* ---- Risk level badges ---- */
+    .badge-risk-low  { background: #f0f9eb; color: #67c23a; border: 1px solid #c2e7b0; }
+    .badge-risk-med  { background: #fdf6ec; color: #e6a23c; border: 1px solid #f5dab1; }
+    .badge-risk-high { background: #fef0f0; color: #f56c6c; border: 1px solid #fbc4c4; }
+
+    /* ---- Metric cards ---- */
+    .metric-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 4px; }
+    .metric-card {
+      flex: 1; min-width: 120px;
+      padding: 14px 18px; border: 1px solid #ebeef5;
+      border-radius: 6px; background: #fafafa;
+    }
+    .metric-card .metric-label { font-size: 11px; color: #909399; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 6px; }
+    .metric-card .metric-value { font-size: 22px; font-weight: 600; color: #303133; }
+
+    /* ---- Analyst summary ---- */
+    .summary-text { white-space: pre-wrap; line-height: 1.6; color: #606266; }
+
+    /* ---- ML Contributors table ---- */
+    .subsection-label { font-size: 12px; font-weight: 600; color: #909399; text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px; margin-top: 20px; }
+    .contrib-table { width: 100%; border-collapse: collapse; }
+    .contrib-table th, .contrib-table td {
+      padding: 8px 12px; text-align: left;
+      border: 1px solid #ebeef5; font-size: 13px;
+    }
+    .contrib-table th { background: #f5f7fa; color: #909399; font-weight: 600; }
+    .contrib-table td { color: #606266; }
+    .contrib-table tbody tr:nth-child(even) td { background: #fafafa; }
+    .contrib-pos { color: #f56c6c; font-weight: 600; }
+    .contrib-neg { color: #67c23a; font-weight: 600; }
+
+    /* ---- Rules tags ---- */
+    .rules-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .rule-tag {
+      display: inline-block; padding: 3px 10px;
+      background: #ecf5ff; color: #409eff;
+      border: 1px solid #b3d8ff; border-radius: 12px; font-size: 12px;
+    }
+
+    /* ---- No data ---- */
+    .no-data { color: #909399; font-size: 13px; }
+
+    /* ---- Raw JSON ---- */
+    details.raw-details > summary {
+      cursor: pointer; color: #409eff; font-size: 13px;
+      padding: 4px 0; user-select: none; list-style: none;
+    }
+    details.raw-details > summary::-webkit-details-marker { display: none; }
+    details.raw-details > summary::before { content: '▶  '; font-size: 10px; }
+    details.raw-details[open] > summary::before { content: '▼  '; }
+    .raw-json {
+      margin-top: 10px; padding: 14px; border-radius: 4px;
+      background: #1e1e1e; color: #d4d4d4;
+      font-family: 'Menlo', 'Monaco', 'Consolas', monospace;
+      font-size: 12px; line-height: 1.5; white-space: pre;
+      overflow-x: auto; max-height: 400px; overflow-y: auto;
+      border: 1px solid #3c3c3c;
+    }
+
+    /* ---- Action bar ---- */
+    .action-bar { margin-top: 24px; display: flex; gap: 8px; }
+    .btn {
+      padding: 8px 18px; border-radius: 4px; cursor: pointer;
+      font-size: 14px; border: none; line-height: 1.5;
+    }
+    .btn-primary  { background: #409eff; color: #fff; }
+    .btn-primary:hover { background: #66b1ff; }
+    .btn-primary:disabled { background: #a0cfff; cursor: not-allowed; }
+    .btn-default  { background: #fff; color: #606266; border: 1px solid #dcdfe6; }
+    .btn-default:hover { border-color: #c0c4cc; color: #303133; }
+    .btn-warning  { background: #e6a23c; color: #fff; }
+    .btn-warning:hover { background: #ebb563; }
+
+    /* ---- Dialog ---- */
+    .dialog-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 1000;
+      align-items: center; justify-content: center;
+    }
+    .dialog-overlay.active { display: flex; }
+    .dialog-box {
+      background: #fff; border-radius: 8px;
+      width: 420px; max-width: 94vw;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.18); overflow: hidden;
+    }
+    .dialog-header {
+      padding: 16px 20px 14px; border-bottom: 1px solid #ebeef5;
+      font-weight: 600; font-size: 16px; color: #303133;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .dialog-close { cursor: pointer; color: #909399; font-size: 18px; background: none; border: none; line-height: 1; }
+    .dialog-close:hover { color: #303133; }
+    .dialog-body { padding: 20px; }
+    .dialog-footer { padding: 12px 20px; border-top: 1px solid #ebeef5; display: flex; justify-content: flex-end; gap: 8px; }
+
+    /* Dialog info rows */
+    .dialog-info { border: 1px solid #ebeef5; border-radius: 4px; margin-bottom: 16px; font-size: 13px; }
+    .dialog-info-row { display: flex; border-bottom: 1px solid #ebeef5; }
+    .dialog-info-row:last-child { border-bottom: none; }
+    .dialog-info-label { width: 120px; padding: 8px 12px; background: #fafafa; color: #909399; font-weight: 500; flex-shrink: 0; }
+    .dialog-info-val   { padding: 8px 12px; color: #303133; }
+
+    /* Form elements */
+    .form-item { margin-bottom: 0; }
+    .form-label { display: block; margin-bottom: 6px; font-size: 13px; color: #606266; font-weight: 500; }
     .nice-select {
-      width: 220px;
-      height: 34px;
-      padding: 0 30px 0 10px;
-      border: 1px solid #dcdfe6;
-      border-radius: 4px;
-      background-color: #fff;
-      font-size: 14px;
-      color: #606266;
-      outline: none;
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      -moz-appearance: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 220px; height: 34px; padding: 0 30px 0 10px;
+      border: 1px solid #dcdfe6; border-radius: 4px;
+      background-color: #fff; font-size: 14px; color: #606266;
+      outline: none; cursor: pointer;
+      appearance: none; -webkit-appearance: none; -moz-appearance: none;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 1024 1024' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23909099' d='M512 682L192 362h640z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-      background-size: 12px;
-      box-sizing: border-box;
+      background-repeat: no-repeat; background-position: right 8px center; background-size: 12px;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
-    .nice-select:hover {
-      border-color: #c0c4cc;
+    .nice-select:focus { border-color: #409eff; box-shadow: 0 0 0 2px rgba(64,158,255,0.2); }
+
+    /* ---- Toast ---- */
+    .toast-wrap { position: fixed; top: 20px; right: 20px; z-index: 2000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
+    .toast {
+      padding: 12px 18px; border-radius: 4px; font-size: 13px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15); max-width: 320px;
+      animation: toastIn 0.25s ease;
     }
-    .nice-select:focus {
-      border-color: #409eff;
-      box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
-    }
+    .toast-success { background: #f0f9eb; color: #67c23a; border-left: 4px solid #67c23a; }
+    .toast-error   { background: #fef0f0; color: #f56c6c; border-left: 4px solid #f56c6c; }
+    .toast-warning { background: #fdf6ec; color: #e6a23c; border-left: 4px solid #e6a23c; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
   </style>
 </head>
 <body>
   <div id="app">
+    <!-- Toast container -->
+    <div class="toast-wrap" id="toast-wrap"></div>
+
+    <!-- Page header -->
     <div class="page-header">
-      <el-button :icon="ArrowLeft" @click="goBack">Back</el-button>
-      <h2>Risk User Review - Detail</h2>
+      <a class="btn-back" href="#" onclick="goBack(); return false;">&#8592; Back</a>
+      <h2>Risk User Review &#8212; Detail</h2>
     </div>
 
-    <div v-if="!record" class="not-found">
-      <el-icon size="48"><Warning /></el-icon>
+    <!-- Not found state -->
+    <div id="not-found" style="display:none" class="not-found">
       <p>Record data not available. Please navigate from the list page.</p>
-      <el-button type="primary" @click="goBack">Go to List</el-button>
+      <button class="btn btn-primary" onclick="goBack()">Go to List</button>
     </div>
 
-    <el-card v-else>
-      <el-descriptions title="Review Information" :column="2" border>
-        <el-descriptions-item label="ID">{{ record.id }}</el-descriptions-item>
-        <el-descriptions-item label="User ID">{{ record.user_id }}</el-descriptions-item>
-        <el-descriptions-item label="Create Time">{{ formatTime(record.create_time) }}</el-descriptions-item>
-        <el-descriptions-item label="Decision">
-          <el-tag :type="decisionTagType(record.decision)" size="small">{{ decisionLabel(record.decision) }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="Decision Source" :span="2">{{ record.decision_source || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Risk Score">{{ record.risk_score }}</el-descriptions-item>
-        <el-descriptions-item label="Risk Level">{{ record.risk_level || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Rule Score">{{ record.rule_score }}</el-descriptions-item>
-        <el-descriptions-item label="Fraud Probability">{{ record.fraud_probability }}</el-descriptions-item>
-        <el-descriptions-item label="Confidence" :span="2">{{ record.confidence || '-' }}</el-descriptions-item>
-        <el-descriptions-item label="Analyst Summary" :span="2">
-          <span style="white-space:pre-wrap">{{ record.analyst_summary || '-' }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="Rules" :span="2">
-          <span style="white-space:pre-wrap;word-break:break-all">{{ record.rules || '-' }}</span>
-        </el-descriptions-item>
-      </el-descriptions>
+    <!-- Main content -->
+    <div id="main-content" style="display:none">
 
-      <div class="action-bar">
-        <el-button
-          type="warning"
-          v-if="record.decision === DECISION_MANUAL_REVIEW"
-          @click="openUpdateDialog"
-        >Update Decision</el-button>
-        <el-button @click="goBack">Back to List</el-button>
+      <!-- 1. Review Summary -->
+      <div class="section">
+        <div class="section-header">Review Summary</div>
+        <div class="section-body">
+          <div class="kv-grid">
+            <div class="kv-item">
+              <span class="kv-label">ID</span>
+              <span class="kv-value" id="val-id">-</span>
+            </div>
+            <div class="kv-item">
+              <span class="kv-label">User ID</span>
+              <span class="kv-value" id="val-user-id">-</span>
+            </div>
+            <div class="kv-item">
+              <span class="kv-label">Create Time</span>
+              <span class="kv-value" id="val-create-time">-</span>
+            </div>
+            <div class="kv-item">
+              <span class="kv-label">Decision</span>
+              <span class="kv-value" id="val-decision">-</span>
+            </div>
+            <div class="kv-item full">
+              <span class="kv-label">Decision Source</span>
+              <span class="kv-value" id="val-decision-source">-</span>
+            </div>
+          </div>
+        </div>
       </div>
-    </el-card>
 
-    <el-dialog v-model="updateDialogVisible" title="Update Decision" width="420px" :close-on-click-modal="false">
-      <el-descriptions :column="1" border size="small" style="margin-bottom:16px">
-        <el-descriptions-item label="Review ID">{{ record && record.id }}</el-descriptions-item>
-        <el-descriptions-item label="User ID">{{ record && record.user_id }}</el-descriptions-item>
-        <el-descriptions-item label="Current Decision">
-          <el-tag v-if="record" :type="decisionTagType(record.decision)" size="small">
-            {{ decisionLabel(record.decision) }}
-          </el-tag>
-        </el-descriptions-item>
-      </el-descriptions>
+      <!-- 2. Risk Assessment -->
+      <div class="section">
+        <div class="section-header">Risk Assessment</div>
+        <div class="section-body">
+          <div class="kv-grid" style="margin-bottom:16px">
+            <div class="kv-item">
+              <span class="kv-label">Risk Level</span>
+              <span class="kv-value" id="val-risk-level">-</span>
+            </div>
+            <div class="kv-item">
+              <span class="kv-label">Confidence</span>
+              <span class="kv-value" id="val-confidence">-</span>
+            </div>
+          </div>
+          <div class="metric-row">
+            <div class="metric-card">
+              <div class="metric-label">Risk Score</div>
+              <div class="metric-value" id="val-risk-score">-</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Rule Score</div>
+              <div class="metric-value" id="val-rule-score">-</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Fraud Probability</div>
+              <div class="metric-value" id="val-fraud-prob">-</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <el-form label-width="120px">
-        <el-form-item label="New Decision" required>
-          <select v-model.number="newDecision" class="nice-select">
-            <option disabled value="">Select resolved decision</option>
-            <option :value="RESOLVED_BLOCK">Resolved - Block</option>
-            <option :value="RESOLVED_WHITELIST">Resolved - Whitelist</option>
-            <option :value="RESOLVED_WATCHLIST">Resolved - Watchlist</option>
-          </select>
-        </el-form-item>
-      </el-form>
+      <!-- 3. AI Explanation -->
+      <div class="section">
+        <div class="section-header">AI Explanation</div>
+        <div class="section-body">
+          <div class="kv-item">
+            <span class="kv-label">Analyst Summary</span>
+            <div class="summary-text" id="val-analyst-summary">-</div>
+          </div>
 
-      <template #footer>
-        <el-button @click="updateDialogVisible = false">Cancel</el-button>
-        <el-button type="primary" :loading="updateLoading" @click="submitUpdateDecision">Confirm</el-button>
-      </template>
-    </el-dialog>
+          <div class="subsection-label">ML Model Top Contributors</div>
+          <div id="ml-contributors-wrap"></div>
+        </div>
+      </div>
+
+      <!-- 4. Triggered Rules -->
+      <div class="section">
+        <div class="section-header">Triggered Rules</div>
+        <div class="section-body">
+          <div id="val-rules"><span class="no-data">-</span></div>
+        </div>
+      </div>
+
+      <!-- 5. Raw Details -->
+      <div class="section">
+        <div class="section-header">Raw Details</div>
+        <div class="section-body">
+          <details class="raw-details">
+            <summary>View Raw Details</summary>
+            <pre class="raw-json" id="val-raw-json"></pre>
+          </details>
+        </div>
+      </div>
+
+      <!-- Action bar -->
+      <div class="action-bar">
+        <button class="btn btn-warning" id="btn-update-decision" style="display:none" onclick="openUpdateDialog()">Update Decision</button>
+        <button class="btn btn-default" onclick="goBack()">Back to List</button>
+      </div>
+    </div>
+
+    <!-- Update Decision Dialog -->
+    <div class="dialog-overlay" id="update-dialog">
+      <div class="dialog-box">
+        <div class="dialog-header">
+          Update Decision
+          <button class="dialog-close" onclick="closeUpdateDialog()">&#x2715;</button>
+        </div>
+        <div class="dialog-body">
+          <div class="dialog-info">
+            <div class="dialog-info-row">
+              <span class="dialog-info-label">Review ID</span>
+              <span class="dialog-info-val" id="dialog-review-id">-</span>
+            </div>
+            <div class="dialog-info-row">
+              <span class="dialog-info-label">User ID</span>
+              <span class="dialog-info-val" id="dialog-user-id">-</span>
+            </div>
+            <div class="dialog-info-row">
+              <span class="dialog-info-label">Current Decision</span>
+              <span class="dialog-info-val" id="dialog-current-decision">-</span>
+            </div>
+          </div>
+          <div class="form-item">
+            <label class="form-label">New Decision <span style="color:#f56c6c">*</span></label>
+            <select id="select-decision" class="nice-select">
+              <option value="">Select resolved decision</option>
+              <option value="10">Resolved - Block</option>
+              <option value="11">Resolved - Whitelist</option>
+              <option value="12">Resolved - Watchlist</option>
+            </select>
+          </div>
+        </div>
+        <div class="dialog-footer">
+          <button class="btn btn-default" onclick="closeUpdateDialog()">Cancel</button>
+          <button class="btn btn-primary" id="btn-confirm-update" onclick="submitUpdateDecision()">Confirm</button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-  <script src="https://unpkg.com/element-plus/dist/index.full.min.js"></script>
   <script>
-    const { createApp, ref, onMounted } = Vue;
+    // ---- Constants ----
+    var DECISION_MANUAL_REVIEW = 1;
+    var RESOLVED_BLOCK = 10, RESOLVED_WHITELIST = 11, RESOLVED_WATCHLIST = 12;
 
-    const DECISION_MANUAL_REVIEW = 1;
-    const DECISION_BLOCK         = 2;
-    const DECISION_WATCHLIST     = 3;
-    const DECISION_ALLOW         = 4;
-    const DECISION_UNRECOGNIZED  = 0;
-    const RESOLVED_BLOCK         = 10;
-    const RESOLVED_WHITELIST     = 11;
-    const RESOLVED_WATCHLIST     = 12;
-
-    const decisionMap = {
-      [DECISION_UNRECOGNIZED]:  { label: 'Unrecognized',         type: 'info' },
-      [DECISION_MANUAL_REVIEW]: { label: 'Manual Review',        type: 'warning' },
-      [DECISION_BLOCK]:         { label: 'Block',                type: 'danger' },
-      [DECISION_WATCHLIST]:     { label: 'Watchlist',            type: '' },
-      [DECISION_ALLOW]:         { label: 'Allow',                type: 'success' },
-      [RESOLVED_BLOCK]:         { label: 'Resolved - Block',     type: 'danger' },
-      [RESOLVED_WHITELIST]:     { label: 'Resolved - Whitelist', type: 'success' },
-      [RESOLVED_WATCHLIST]:     { label: 'Resolved - Watchlist', type: 'info' },
+    var decisionMap = {
+      0:  { label: 'Unrecognized',         cls: 'badge-default' },
+      1:  { label: 'Manual Review',        cls: 'badge-warning' },
+      2:  { label: 'Block',                cls: 'badge-danger' },
+      3:  { label: 'Watchlist',            cls: 'badge-default' },
+      4:  { label: 'Allow',                cls: 'badge-success' },
+      10: { label: 'Resolved - Block',     cls: 'badge-danger' },
+      11: { label: 'Resolved - Whitelist', cls: 'badge-success' },
+      12: { label: 'Resolved - Watchlist', cls: 'badge-info' },
     };
 
-    function decisionLabel(val) {
-      return (decisionMap[val] && decisionMap[val].label) ? decisionMap[val].label : String(val);
+    var featureNameMap = {
+      order_count_last_1h:    'Orders in Last 1 Hour',
+      order_count_last_24h:   'Orders in Last 24 Hours',
+      unique_ip_count:        'Unique IP Count',
+      account_age_days:       'Account Age',
+      avg_order_amount_today: 'Avg Order Amount Today',
+      receive_address_count:  'Receive Address Count',
+    };
+
+    // ---- Helper functions ----
+    function safeParseJson(value) {
+      if (value === null || value === undefined) return null;
+      if (typeof value === 'object') return value;
+      if (typeof value === 'string') {
+        try { return JSON.parse(value); } catch (e) { return null; }
+      }
+      return null;
     }
 
-    function decisionTagType(val) {
-      return (decisionMap[val] && decisionMap[val].type !== undefined) ? decisionMap[val].type : 'info';
+    function formatScore(value) {
+      if (value === null || value === undefined || value === '') return 'N/A';
+      var n = parseFloat(value);
+      if (isNaN(n)) return 'N/A';
+      return n.toFixed(2);
     }
 
-    function formatTime(ts) {
-      if (ts === null || ts === undefined) return '-';
-      return new Date(ts * 1000).toLocaleString();
+    function formatSnakeCaseLabel(value) {
+      if (!value) return String(value);
+      var mapped = featureNameMap[value];
+      if (mapped) return mapped;
+      return value.replace(/_/g, ' ').replace(/\b\w/g, function(c) { return c.toUpperCase(); });
+    }
+
+    function normalizeRulesHit(value) {
+      if (!value) return [];
+      if (Array.isArray(value)) return value;
+      var parsed = safeParseJson(value);
+      if (Array.isArray(parsed)) return parsed;
+      if (typeof value === 'string') {
+        return value.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+      }
+      return [];
+    }
+
+    function normalizeTopContributors(value) {
+      if (!value) return null;
+      var parsed = safeParseJson(value);
+      if (!Array.isArray(parsed) || parsed.length === 0) return null;
+      var items = parsed.map(function(item) {
+        var feature = item.feature || item.name || item.field || '';
+        var contribution = item.contribution !== undefined ? item.contribution
+          : item.score !== undefined ? item.score
+          : item.value !== undefined ? item.value
+          : item.weight !== undefined ? item.weight
+          : item.impact !== undefined ? item.impact
+          : null;
+        return { feature: feature, contribution: contribution, raw: item };
+      });
+      items.sort(function(a, b) {
+        return Math.abs(parseFloat(b.contribution) || 0) - Math.abs(parseFloat(a.contribution) || 0);
+      });
+      return items;
+    }
+
+    function getDecisionBadgeHtml(decision) {
+      var d = decisionMap[decision];
+      var label = d ? d.label : String(decision);
+      var cls   = d ? d.cls   : 'badge-default';
+      return '<span class="badge ' + cls + '">' + escHtml(label) + '</span>';
+    }
+
+    function getRiskClass(riskLevel) {
+      var lvl = (riskLevel || '').toLowerCase();
+      if (lvl === 'low')                    return 'badge-risk-low';
+      if (lvl === 'medium' || lvl === 'med') return 'badge-risk-med';
+      if (lvl === 'high')                   return 'badge-risk-high';
+      return 'badge-default';
+    }
+
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // ---- Toast ----
+    function showToast(msg, type) {
+      var wrap = document.getElementById('toast-wrap');
+      var el = document.createElement('div');
+      el.className = 'toast toast-' + type;
+      el.textContent = msg;
+      wrap.appendChild(el);
+      setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 3500);
+    }
+
+    // ---- Navigation ----
+    function goBack() {
+      if (document.referrer && document.referrer.includes('/risk-user-reviews/page')) {
+        history.back();
+      } else {
+        window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page';
+      }
     }
 
     function getReviewIdFromPath() {
-      const parts = window.location.pathname.split('/');
+      var parts = window.location.pathname.split('/');
       return parts[parts.length - 1];
     }
 
-    createApp({
-      setup() {
-        const record              = ref(null);
-        const updateDialogVisible = ref(false);
-        const newDecision         = ref('');
-        const updateLoading       = ref(false);
+    // ---- Render ----
+    var currentRecord = null;
 
-        onMounted(() => {
-          const id = getReviewIdFromPath();
-          const stored = sessionStorage.getItem('rur_detail_' + id);
-          if (stored) {
-            try { record.value = JSON.parse(stored); } catch (e) {}
-          }
-        });
+    function renderRecord(record) {
+      currentRecord = record;
 
-        function goBack() {
-          if (document.referrer && document.referrer.includes('/risk-user-reviews/page')) {
-            history.back();
+      // Review Summary
+      document.getElementById('val-id').textContent = record.id != null ? record.id : 'N/A';
+      document.getElementById('val-user-id').textContent = record.user_id != null ? record.user_id : 'N/A';
+      document.getElementById('val-create-time').textContent = record.create_time
+        ? new Date(record.create_time * 1000).toLocaleString() : 'N/A';
+      document.getElementById('val-decision').innerHTML = getDecisionBadgeHtml(record.decision);
+      document.getElementById('val-decision-source').textContent = record.decision_source || 'N/A';
+
+      // Risk Assessment
+      var riskLvl = record.risk_level || '';
+      document.getElementById('val-risk-level').innerHTML = riskLvl
+        ? '<span class="badge ' + getRiskClass(riskLvl) + '">' + escHtml(riskLvl.charAt(0).toUpperCase() + riskLvl.slice(1)) + '</span>'
+        : '<span class="no-data">N/A</span>';
+      document.getElementById('val-confidence').textContent = record.confidence || 'N/A';
+      document.getElementById('val-risk-score').textContent = formatScore(record.risk_score);
+      document.getElementById('val-rule-score').textContent = formatScore(record.rule_score);
+      document.getElementById('val-fraud-prob').textContent = formatScore(record.fraud_probability);
+
+      // AI Explanation - Analyst Summary
+      document.getElementById('val-analyst-summary').textContent = record.analyst_summary || 'N/A';
+
+      // AI Explanation - ML Top Contributors
+      var mlRaw = record.ml_model_top_contributor
+        || record.ml_top_contributors
+        || record.top_contributors
+        || record.top_contributions
+        || null;
+      var contributors = normalizeTopContributors(mlRaw);
+      var mlWrap = document.getElementById('ml-contributors-wrap');
+      if (!contributors || contributors.length === 0) {
+        mlWrap.innerHTML = '<span class="no-data">No ML contribution details available.</span>';
+      } else {
+        var rows = '';
+        for (var i = 0; i < contributors.length; i++) {
+          var c = contributors[i];
+          var raw = c.raw || {};
+          var val = parseFloat(c.contribution);
+          var isPos = !isNaN(val) && val > 0;
+          var isNeg = !isNaN(val) && val < 0;
+          var formatted = isNaN(val) ? 'N/A' : (isPos ? '+' : '') + val.toFixed(2);
+          var cls = isPos ? 'contrib-pos' : (isNeg ? 'contrib-neg' : '');
+          // Ratio column (optional)
+          var ratio = raw.ratio ? ' (' + escHtml(String(raw.ratio)) + ')' : '';
+          // Direction: derive from raw.direction (string) or sign
+          var dirText;
+          if (raw.direction && typeof raw.direction === 'string') {
+            dirText = escHtml(raw.direction);
           } else {
-            window.location.href = '/admin-ms/v1/merchant/risk-user-reviews/page';
+            dirText = isPos ? 'Increases Risk' : (isNeg ? 'Reduces Risk' : '-');
           }
+          rows += '<tr>'
+            + '<td>' + escHtml(formatSnakeCaseLabel(c.feature)) + '</td>'
+            + '<td class="' + cls + '">' + escHtml(formatted) + ratio + '</td>'
+            + '<td>' + dirText + '</td>'
+            + '</tr>';
         }
+        mlWrap.innerHTML = '<table class="contrib-table">'
+          + '<thead><tr><th>Feature</th><th>Contribution</th><th>Impact</th></tr></thead>'
+          + '<tbody>' + rows + '</tbody>'
+          + '</table>';
+      }
 
-        function openUpdateDialog() {
-          newDecision.value = '';
-          updateDialogVisible.value = true;
+      // Triggered Rules
+      var rules = normalizeRulesHit(record.rules);
+      var rulesEl = document.getElementById('val-rules');
+      if (rules.length === 0) {
+        rulesEl.innerHTML = '<span class="no-data">No rules triggered.</span>';
+      } else {
+        var tags = rules.map(function(r) {
+          return '<span class="rule-tag">' + escHtml(formatSnakeCaseLabel(r)) + '</span>';
+        }).join('');
+        rulesEl.innerHTML = '<div class="rules-tags">' + tags + '</div>';
+      }
+
+      // Raw Details
+      document.getElementById('val-raw-json').textContent = JSON.stringify(record, null, 2);
+
+      // Update Decision button
+      document.getElementById('btn-update-decision').style.display =
+        (record.decision === DECISION_MANUAL_REVIEW) ? '' : 'none';
+    }
+
+    // ---- Dialog ----
+    function openUpdateDialog() {
+      if (!currentRecord) return;
+      document.getElementById('dialog-review-id').textContent = currentRecord.id;
+      document.getElementById('dialog-user-id').textContent = currentRecord.user_id;
+      document.getElementById('dialog-current-decision').innerHTML = getDecisionBadgeHtml(currentRecord.decision);
+      document.getElementById('select-decision').value = '';
+      document.getElementById('update-dialog').classList.add('active');
+    }
+
+    function closeUpdateDialog() {
+      document.getElementById('update-dialog').classList.remove('active');
+    }
+
+    async function submitUpdateDecision() {
+      var sel = document.getElementById('select-decision');
+      var decision = parseInt(sel.value, 10);
+      if (!sel.value || isNaN(decision)) {
+        showToast('Please select a resolved decision', 'warning');
+        return;
+      }
+      var btn = document.getElementById('btn-confirm-update');
+      btn.disabled = true;
+      btn.textContent = 'Submitting\u2026';
+      try {
+        var body = { id: currentRecord.id, user_id: currentRecord.user_id, decision: decision };
+        var resp = await fetch(
+          '/admin-ms/v1/merchant/risk-user-reviews/' + currentRecord.id + '/decision',
+          { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+        );
+        var json = await resp.json();
+        if (json.err_msg) {
+          showToast(json.err_msg, 'error');
+        } else {
+          showToast('Decision updated successfully', 'success');
+          closeUpdateDialog();
+          currentRecord = Object.assign({}, currentRecord, { decision: decision });
+          sessionStorage.setItem('rur_detail_' + currentRecord.id, JSON.stringify(currentRecord));
+          renderRecord(currentRecord);
         }
+      } catch (e) {
+        showToast('Request failed: ' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Confirm';
+      }
+    }
 
-        async function submitUpdateDecision() {
-          if (newDecision.value === '' || newDecision.value === null || newDecision.value === undefined) {
-            ElementPlus.ElMessage.warning('Please select a resolved decision');
-            return;
-          }
-          updateLoading.value = true;
-          try {
-            const body = {
-              id: record.value.id,
-              user_id: record.value.user_id,
-              decision: newDecision.value,
-            };
-            const resp = await fetch(
-              '/admin-ms/v1/merchant/risk-user-reviews/' + record.value.id + '/decision',
-              {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(body),
-              }
-            );
-            const json = await resp.json();
-            if (json.err_msg) {
-              ElementPlus.ElMessage.error(json.err_msg);
-            } else {
-              ElementPlus.ElMessage.success('Decision updated successfully');
-              updateDialogVisible.value = false;
-              record.value = Object.assign({}, record.value, { decision: newDecision.value });
-              sessionStorage.setItem('rur_detail_' + record.value.id, JSON.stringify(record.value));
-            }
-          } catch (e) {
-            ElementPlus.ElMessage.error('Request failed: ' + e.message);
-          } finally {
-            updateLoading.value = false;
-          }
-        }
-
-        return {
-          DECISION_MANUAL_REVIEW, RESOLVED_BLOCK, RESOLVED_WHITELIST, RESOLVED_WATCHLIST,
-          decisionLabel, decisionTagType, formatTime,
-          record, updateDialogVisible, newDecision, updateLoading,
-          goBack, openUpdateDialog, submitUpdateDecision,
-          ArrowLeft: ElementPlus.icons ? ElementPlus.icons.ArrowLeft : null,
-          Warning:   ElementPlus.icons ? ElementPlus.icons.Warning   : null,
-        };
-      },
-    }).use(ElementPlus).mount('#app');
+    // ---- Init ----
+    (function init() {
+      var id = getReviewIdFromPath();
+      var stored = sessionStorage.getItem('rur_detail_' + id);
+      var record = null;
+      if (stored) {
+        try { record = JSON.parse(stored); } catch (e) {}
+      }
+      if (record) {
+        document.getElementById('main-content').style.display = '';
+        renderRecord(record);
+      } else {
+        document.getElementById('not-found').style.display = '';
+      }
+    })();
   </script>
 </body>
 </html>
